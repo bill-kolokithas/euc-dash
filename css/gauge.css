@@ -1,0 +1,20 @@
+#gauge {
+  margin-left:-120px;
+  margin-top:10px;
+}
+
+#gauge-label {
+  display:block;
+  margin-left:115px;
+  margin-top:10px;
+}
+
+#gauge-value {
+  display:block;
+  margin-left:120px;
+  margin-top:-190px;
+}
+
+#gauge-value:after {
+  content: '%';
+}
