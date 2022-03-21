@@ -136,7 +136,6 @@ function setImuModel(data) {
 async function switchToMainPackets() {
   characteristic.removeEventListener('characteristicvaluechanged', readExtendedPackets)
   document.getElementById('extended').style.display = 'none'
-  document.getElementById('pwm-gauge').style.display = 'none'
   document.getElementById('main').style.display = null
   document.getElementById('packet-switch').innerText = 'Switch to extended packets'
   document.getElementById('packet-switch').onclick = switchToExtendedPackets
@@ -148,7 +147,6 @@ async function switchToExtendedPackets() {
   characteristic.removeEventListener('characteristicvaluechanged', readMainPackets)
   document.getElementById('main').style.display = 'none'
   document.getElementById('extended').style.display = null
-  document.getElementById('pwm-gauge').style.display = null
   document.getElementById('packet-switch').innerText = 'Switch to main packets'
   document.getElementById('packet-switch').onclick = switchToMainPackets
   line = ''
@@ -171,7 +169,6 @@ function updatePwmAlarmSpeed() {
   alarmSpeed10 = (alarmSpeed100 * speedReduction).toFixed(1)
 
   setField('pwm-alarm-speeds', `${alarmSpeed10} - ${alarmSpeed50} - ${alarmSpeed100}`)
-  document.getElementById('pwm-alarm-speeds-help').innerText = '10% - 50% - 100%'
 }
 
 function updateVoltageHelpText() {
@@ -180,7 +177,7 @@ function updateVoltageHelpText() {
 
   minVoltage = modelParams()['voltMultiplier'] * modelParams()['minCellVolt'] * 16
   maxVoltage = modelParams()['voltMultiplier'] * maxCellVolt * 16
-  voltageHelp.innerText = `min: ${minVoltage} - max: ${maxVoltage}`
+  voltageHelp.innerText = `min: ${minVoltage}v - max: ${maxVoltage}v`
 }
 
 function readFirstMainPacket(data) {
@@ -272,12 +269,20 @@ function readMainPackets(event) {
 function appendElement(key, value) {
   return `
   <div class="mb-2 row">
-    <label class="col-sm-2 col-form-label" for="${key}">${key}:</label>
-    <div class="col-sm-3">
+    <label class="col-lg-5 col-form-label" for="${key}">${key}:</label>
+    <div class="col-lg-7">
       <input class="form-control" id="${key}" type="text" value="${value}" disabled readonly>
     </div>
   </div>
   `
+}
+
+function appendTempHelp() {
+  tempElement = document.getElementById('Tem')
+  tempHelp = document.createElement('small')
+  tempHelp.className = 'form-text text-muted'
+  tempHelp.textContent = 'MPU6500 format'
+  tempElement.after(tempHelp)
 }
 
 function readExtendedPackets(event) {
@@ -309,13 +314,8 @@ function readExtendedPackets(event) {
     else {
       html = ''
       keys.forEach((key, i) => html += appendElement(key, values[i]))
-      document.getElementById('extended').innerHTML = html
-      tempElement = document.getElementById('Tem')
-      tempHelp = document.createElement("small")
-      tempHelp.className = 'form-text text-muted'
-      tempHelp.textContent = 'MPU6500 format'
-      tempElement.after(tempHelp)
-
+      document.getElementById('extended-data').innerHTML = html
+      appendTempHelp()
       rendered = true
     }
 
