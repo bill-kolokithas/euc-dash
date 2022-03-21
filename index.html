@@ -13,9 +13,8 @@
   </head>
   <body>
     <div class="container mt-1 pt-1">
-      <button type="button" class="btn btn-primary" onclick="scan()">Scan</button>
-      <button type="button" class="btn btn-danger" onclick="disconnect()">Disconnect</button>
-      <button type="button" id="packet-switch" class="btn btn-success" onclick="switchToExtendedPackets()">Switch to extended packets</button>
+      <button type="button" id="scan-disconnect" class="btn-lg btn-primary" onclick="scan()">Scan &amp; Connect</button>
+      <button type="button" id="packet-switch" class="btn-lg btn-success invisible" onclick="switchToExtendedPackets()">Switch to extended packets</button>
 
       </br>
       </br>
@@ -171,7 +170,7 @@
         </div>
         <div id="pwm-gauge" style="display:none">
           <span id="gauge-label">PWM</span>
-          <canvas id="gauge" width="500" height="250"></canvas>
+          <canvas id="gauge" width="600" height="300"></canvas>
           <span id="gauge-value"></span>
         </div>
       </form>

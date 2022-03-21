@@ -89,6 +89,10 @@ async function initialize() {
   pwmAlarmSpeed = 0
   rendered = false
   wheelModel = ''
+  document.getElementById('scan-disconnect').innerText = 'Disconnect'
+  document.getElementById('scan-disconnect').className = 'btn-lg btn-danger'
+  document.getElementById('scan-disconnect').onclick = disconnect
+  document.getElementById('packet-switch').classList.toggle('invisible')
   await sendCommand('fetchModel')
 }
 
@@ -103,6 +107,10 @@ async function exitYmodem() {
 
 function disconnect() {
   device.gatt.disconnect()
+  document.getElementById('scan-disconnect').innerText = 'Scan'
+  document.getElementById('scan-disconnect').className = 'btn-lg btn-primary'
+  document.getElementById('scan-disconnect').onclick = scan
+  document.getElementById('packet-switch').classList.toggle('invisible')
 }
 
 function setField(field, val) {

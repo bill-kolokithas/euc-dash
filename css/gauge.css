@@ -5,14 +5,14 @@
 
 #gauge-label {
   display:block;
-  margin-left:115px;
-  margin-top:10px;
+  margin-left:162px;
+  margin-top:15px;
 }
 
 #gauge-value {
   display:block;
-  margin-left:120px;
-  margin-top:-190px;
+  margin-left:165px;
+  margin-top:-225px;
 }
 
 #gauge-value:after {
