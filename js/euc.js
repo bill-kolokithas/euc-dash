@@ -162,13 +162,12 @@ function updatePwmAlarmSpeed() {
   speedReduction = 1 - (100 - battery) / 450
   alarmSpeed100 = (speed / speedReduction).toFixed(1)
 
-  speedReduction = 1 - (100 - 50) / 450
-  alarmSpeed50 = (alarmSpeed100 * speedReduction).toFixed(1)
+  alarmSpeeds = [20, 50, 80].map(batt => {
+    speedReduction = 1 - (100 - batt) / 450
+    return (alarmSpeed100 * speedReduction).toFixed(1)
+  })
 
-  speedReduction = 1 - (100 - 10) / 450
-  alarmSpeed10 = (alarmSpeed100 * speedReduction).toFixed(1)
-
-  setField('pwm-alarm-speeds', `${alarmSpeed10} - ${alarmSpeed50} - ${alarmSpeed100}`)
+  setField('pwm-alarm-speeds', alarmSpeeds.concat(alarmSpeed100).join(' - '))
 }
 
 function updateVoltageHelpText() {
