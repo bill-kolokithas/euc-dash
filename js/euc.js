@@ -8,6 +8,8 @@ function modelParams() {
     case 'MCM5':        return { 'voltMultiplier': 1.25, 'minCellVolt': 3.3 }
     case 'T3':          return { 'voltMultiplier': 1.25, 'minCellVolt': 3.25 }
     case 'Nikola':      return { 'voltMultiplier': 1.50, 'minCellVolt': 3.25 }
+    case 'MSP C30':     return { 'voltMultiplier': 1.50, 'minCellVolt': 3.25 }
+    case 'MSP C38':     return { 'voltMultiplier': 1.50, 'minCellVolt': 3.25 }
     case 'RS C30':      return { 'voltMultiplier': 1.50, 'minCellVolt': 3.25 }
     case 'RS C38':      return { 'voltMultiplier': 1.50, 'minCellVolt': 3.25 }
     case 'EX':          return { 'voltMultiplier': 1.50, 'minCellVolt': 3.25 }
@@ -32,8 +34,8 @@ function commands(cmd, param) {
     case 'lightsStrobe':    return [84]
     case 'alertsOne':       return [111]
     case 'alarmsTwo':       return [117]
-    case 'alertsOff':       return [105]
-    case 'alertsSport':     return [73]
+    case 'alarmsOff':       return [105]
+    case 'alarmsSport':     return [73]
     case 'pedalSoft':       return [115]
     case 'pedalMedium':     return [102]
     case 'pedalHard':       return [104]
@@ -67,7 +69,7 @@ const speedAlarmsHuman = {
   0: '1 + 2 + PWM',
   1: '2 + PWM',
   2: 'PWM only',
-  3: 'disabled'
+  3: 'Sport'
 }
 
 async function sendCommand(cmd, param) {
@@ -96,6 +98,14 @@ async function initialize() {
   await sendCommand('fetchModel')
 }
 
+function disconnect() {
+  device.gatt.disconnect()
+  document.getElementById('scan-disconnect').innerText = 'Scan'
+  document.getElementById('scan-disconnect').className = 'btn-lg btn-primary'
+  document.getElementById('scan-disconnect').onclick = scan
+  document.getElementById('packet-switch').classList.toggle('invisible')
+}
+
 async function exitYmodem() {
   await sendCommand([1, 0, 255, 65, 0, 1, 0].concat(Array(13).fill(0)))
 
@@ -103,14 +113,6 @@ async function exitYmodem() {
     await sendCommand(Array(20).fill(0))
 
   await sendCommand(Array(11).fill(0).concat([19, 77]))
-}
-
-function disconnect() {
-  device.gatt.disconnect()
-  document.getElementById('scan-disconnect').innerText = 'Scan'
-  document.getElementById('scan-disconnect').className = 'btn-lg btn-primary'
-  document.getElementById('scan-disconnect').onclick = scan
-  document.getElementById('packet-switch').classList.toggle('invisible')
 }
 
 function setField(field, val) {
@@ -161,13 +163,12 @@ function updatePwmAlarmSpeed() {
 
   speedReduction = 1 - (100 - battery) / 450
   alarmSpeed100 = (speed / speedReduction).toFixed(1)
+  setField('pwm-alarm-100', alarmSpeed100)
 
-  alarmSpeeds = [20, 50, 80].map(batt => {
+  alarmSpeeds = [10, 20, 30, 40, 50, 60, 70, 80, 90].forEach(batt => {
     speedReduction = 1 - (100 - batt) / 450
-    return (alarmSpeed100 * speedReduction).toFixed(1)
+    setField(`pwm-alarm-${batt}`, (alarmSpeed100 * speedReduction).toFixed(1))
   })
-
-  setField('pwm-alarm-speeds', alarmSpeeds.concat(alarmSpeed100).join(' - '))
 }
 
 function updateVoltageHelpText() {
