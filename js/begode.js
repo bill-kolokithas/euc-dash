@@ -253,9 +253,9 @@ function readMainPackets(event) {
 
   if (data.getInt16(0) == 0x55AA) {
     readFirstMainPacket(data)
-  } else if (data.getInt16(0) == 0x5A5A) {
+  } else if (data.getUint16(0) == 0x5A5A) {
     readSecondMainPacket(data)
-  } else if (data.getInt32(0) == 0x4E414D45) {
+  } else if (data.getUint32(0) == 0x4E414D45) {
     setWheelModel(data)
   } else if (data.getInt16(0) == 0x4757) {
     setWheelCodeName(data)
