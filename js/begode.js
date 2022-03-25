@@ -29,6 +29,7 @@ function commands(cmd, param) {
     case 'fetchModel':      return [78]
     case 'fetchModelCode':  return [86]
     case 'fetchGreet':      return [103]
+    case 'beep':            return [98]
     case 'lightsOn':        return [81]
     case 'lightsOff':       return [69]
     case 'lightsStrobe':    return [84]
@@ -42,9 +43,7 @@ function commands(cmd, param) {
     case 'tiltAngleLow':    return [60]
     case 'tiltAngleMedium': return [61]
     case 'tiltAngleHigh':   return [62]
-    case 'beep':            return [98]
     case 'calibrate':       return [99, 121]
-    case 'enterYmodem':     return [33, 64]
     case 'tiltbackOff':     return [34]
     case 'tiltbackSpeed':   return [87, 89, param / 10 + 48, param % 10 + 48]
     case 'volume':          return [87, 66, 48 + param]
@@ -94,19 +93,29 @@ async function initialize() {
   document.getElementById('scan-disconnect').innerText = 'Disconnect'
   document.getElementById('scan-disconnect').className = 'btn-lg btn-danger'
   document.getElementById('scan-disconnect').onclick = disconnect
-  document.getElementById('packet-switch').classList.toggle('invisible')
+  document.getElementById('packet-switch').classList.remove('invisible')
   await sendCommand('fetchModel')
 }
 
 function disconnect() {
   device.gatt.disconnect()
-  document.getElementById('scan-disconnect').innerText = 'Scan'
+  document.getElementById('scan-disconnect').innerText = 'Scan & Connect'
   document.getElementById('scan-disconnect').className = 'btn-lg btn-primary'
   document.getElementById('scan-disconnect').onclick = scan
-  document.getElementById('packet-switch').classList.toggle('invisible')
+  document.getElementById('packet-switch').classList.add('invisible')
+}
+
+async function startYmodem() {
+  await sendCommand([33])
+  setTimeout(() => sendCommand([64]), 250)
+  characteristic.removeEventListener('characteristicvaluechanged', readMainPackets)
+  characteristic.addEventListener('characteristicvaluechanged',
+    (data) => console.log(Decoder.decode(data.target.value)))
 }
 
 async function exitYmodem() {
+  await sendCommand([37])
+  await sendCommand([1])
   await sendCommand([1, 0, 255, 65, 0, 1, 0].concat(Array(13).fill(0)))
 
   for (i = 0; i < 5; i++)
