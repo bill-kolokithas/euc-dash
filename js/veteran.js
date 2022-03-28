@@ -170,7 +170,7 @@ function readExtendedPackets(event) {
   if (fragment.endsWith('P7') || fragment.endsWith('BvFc') || fragment.endsWith('U5')) {
     keys = line.match(/>\w+/g)
     keys = keys.map(k => k.slice(1))
-    values = line.match(/\d+/g)
+    values = line.match(/-?\d+/g)
 
     if (fragment.endsWith('U5')) {
       idleTime = line.match(/\d+:.+:.\d+/)[0]

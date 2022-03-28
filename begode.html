@@ -103,9 +103,9 @@
                   </div>
                 </div>
                 <div class="mb-2 row">
-                  <label class="col-lg-5 col-form-label" for="speed-alarms">Speed alarms:</label>
+                  <label class="col-lg-5 col-form-label" for="speed-alarm-mode">Speed alarm mode:</label>
                   <div class="col-lg-7">
-                    <input class="form-control" id="speed-alarms" type="text" value="" disabled readonly>
+                    <input class="form-control" id="speed-alarm-mode" type="text" value="" disabled readonly>
                   </div>
                 </div>
                 <div class="mb-2 row">
@@ -115,9 +115,9 @@
                   </div>
                 </div>
                 <div class="mb-2 row">
-                  <label class="col-lg-5 col-form-label" for="tilt-angle">Tilt angle:</label>
+                  <label class="col-lg-5 col-form-label" for="angle-mode">Angle mode:</label>
                   <div class="col-lg-7">
-                    <input class="form-control" id="tilt-angle" type="text" value="" disabled readonly>
+                    <input class="form-control" id="angle-mode" type="text" value="" disabled readonly>
                   </div>
                 </div>
                 <div class="mb-2 row">
@@ -142,17 +142,10 @@
               </div>
               <div class="card-body">
                 <div class="mb-2 row">
-                  <label class="col-lg-5 col-form-label" for="alarm1">Alarm 1:</label>
+                  <label class="col-lg-5 col-form-label" for="fault-alarms">Fault alarms:</label>
                   <div class="col-lg-7">
-                    <input class="form-control" id="alarm1" type="text" value="" disabled readonly>
-                    <small class="form-text text-muted">pwm, overheat etc</small>
-                  </div>
-                </div>
-                <div class="mb-2 row">
-                  <label class="col-lg-5 col-form-label" for="alarm2">Alarm 2:</label>
-                  <div class="col-lg-7">
-                    <input class="form-control" id="alarm2" type="text" value="" disabled readonly>
-                    <small class="form-text text-muted">speed alarms</small>
+                    <input class="form-control" id="fault-alarms" type="text" value="" disabled readonly>
+                    <small class="form-text text-muted">pwm, overheat, overvoltage etc</small>
                   </div>
                 </div>
                 <div class="mb-2 row">
@@ -258,7 +251,7 @@
         <div id="extended" style="display:none">
           <div class="card mb-2 col-lg-6">
             <div class="card-header">
-              Live data
+              Extended data
             </div>
             <div class="card-body" id="extended-data">
             </div>

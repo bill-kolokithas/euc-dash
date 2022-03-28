@@ -52,23 +52,34 @@ function commands(cmd, param) {
   }
 }
 
-const pedalModeHuman = {
+const pedalModes = {
   0: 'soft',
   1: 'medium',
   2: 'hard'
 }
 
-const tiltAngleHuman = {
+const angleModes = {
   0: 'low',
   1: 'medium',
   2: 'high'
 }
 
-const speedAlarmsHuman = {
+const speedAlarmModes = {
   0: '1 + 2 + PWM',
   1: '2 + PWM',
   2: 'PWM only',
   3: 'Sport'
+}
+
+const faultAlarms = {
+  0: 'high power',
+  1: 'high speed 2',
+  2: 'high speed 1',
+  3: 'low voltage',
+  4: 'over voltage',
+  5: 'high temperature',
+  6: 'hall sensor error',
+  7: 'transport mode'
 }
 
 async function sendCommand(cmd, param) {
@@ -76,8 +87,10 @@ async function sendCommand(cmd, param) {
 }
 
 async function scan() {
-  device = await navigator.bluetooth.requestDevice(
-    { filters: [{ namePrefix: 'GotWay' }], optionalServices: [0xFFE0]})
+  device = await navigator.bluetooth.requestDevice({ filters: [
+    { namePrefix: 'GotWay' },
+    { services: [0xFFE0] },
+  ] })
   server = await device.gatt.connect()
   service = await server.getPrimaryService(0xFFE0)
   characteristic = await service.getCharacteristic(0xFFE1)
@@ -107,7 +120,7 @@ function disconnect() {
 
 async function startYmodem() {
   await sendCommand([33])
-  setTimeout(() => sendCommand([64]), 250)
+  setTimeout(() => sendCommand([64]), 200)
   characteristic.removeEventListener('characteristicvaluechanged', readMainPackets)
   characteristic.addEventListener('characteristicvaluechanged',
     (data) => console.log(Decoder.decode(data.target.value)))
@@ -184,14 +197,14 @@ function updateVoltageHelpText() {
   if (wheelModel == '')
     return
 
-  minVoltage = modelParams()['voltMultiplier'] * modelParams()['minCellVolt'] * 16
-  maxVoltage = modelParams()['voltMultiplier'] * maxCellVolt * 16
+  minVoltage = (modelParams()['voltMultiplier'] * modelParams()['minCellVolt'] * 16).toFixed(1)
+  maxVoltage = (modelParams()['voltMultiplier'] * maxCellVolt * 16).toFixed(1)
   voltageHelp.innerText = `min: ${minVoltage}v - max: ${maxVoltage}v`
 }
 
 function readFirstMainPacket(data) {
   voltage = data.getUint16(2) / 100
-  scaledVoltage = (voltage * modelParams()['voltMultiplier']).toFixed(2)
+  scaledVoltage = (voltage * modelParams()['voltMultiplier']).toFixed(1)
   setField('voltage', scaledVoltage)
 
   voltageHelp = document.getElementById('voltage-help')
@@ -227,13 +240,13 @@ function readSecondMainPacket(data) {
   totalDistance = (data.getUint32(6) / 1000).toFixed(2)
   setField('total-distance', totalDistance)
 
-  settings = data.getUint16(10)
-  pedalMode   = settings >> 13 & 0x3
-  speedAlarms = settings >> 10 & 0x3
-  tiltAngle   = settings >>  7 & 0x3
-  setField('pedal-mode', pedalModeHuman[pedalMode])
-  setField('speed-alarms', speedAlarmsHuman[speedAlarms])
-  setField('tilt-angle', tiltAngleHuman[tiltAngle])
+  modes = data.getUint16(10)
+  pedalMode      = modes >> 13 & 0x3
+  speedAlarmMode = modes >> 10 & 0x3
+  tiltAngleMode  = modes >>  7 & 0x3
+  setField('pedal-mode', pedalModes[pedalMode])
+  setField('speed-alarm-mode', speedAlarmModes[speedAlarmMode])
+  setField('angle-mode', angleModes[tiltAngleMode])
 
   powerOffTime = data.getUint16(12)
   powerOffMinutes = Math.floor(powerOffTime / 60)
@@ -246,15 +259,18 @@ function readSecondMainPacket(data) {
   ledMode = data.getUint16(16)
   setField('led-mode', ledMode)
 
-  alarms = data.getUint16(18)
-  alarm1 = alarms >> 8 & 0x1
-  setField('alarm1', alarm1)
+  faultAlarm = data.getUint8(18)
+  faultAlarmLine = ''
+  for (let bit = 0; bit < 8; bit++) {
+    if (faultAlarm >> bit & 0x1)
+      faultAlarmLine += faultAlarms[bit] + ', '
+  }
 
-  if (alarm1 == 1 && pwmAlarmSpeed == 0)
+  faultAlarmLine = faultAlarmLine.slice(0, -2)
+  setField('fault-alarms', faultAlarmLine)
+
+  if (faultAlarm & 0x1 && pwmAlarmSpeed == 0)
     updatePwmAlarmSpeed()
-
-  alarm2 = alarms >> 8 & 0x6
-  setField('alarm2', alarm2)
 }
 
 function readMainPackets(event) {
@@ -302,9 +318,9 @@ function readExtendedPackets(event) {
     line += fragment;
 
   if (fragment.endsWith('\r\n')) {
-    keys = line.match(/[a-zA-Z_/=]+/g)
+    keys = line.match(/[A-z/=]+/g)
     keys = keys.map(l => l.split('=')[0])
-    values = line.match(/[-0-9]+/g)
+    values = line.match(/-?\d+/g)
 
     pwmIndex = keys.indexOf('PWM')
     if (pwmIndex != 1) {
