@@ -271,7 +271,7 @@ function readSecondMainPacket(data) {
   faultAlarmLine = faultAlarmLine.slice(0, -2)
   setField('fault-alarms', faultAlarmLine)
 
-  if (faultAlarm & 0x1 && pwmAlarmSpeed == 0)
+  if (faultAlarm & 0x1 && (pwmAlarmSpeed == 0 || speed < pwmAlarmSpeed))
     updatePwmAlarmSpeed()
 }
 
