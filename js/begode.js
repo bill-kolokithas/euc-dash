@@ -36,9 +36,9 @@ function commands(cmd, param) {
     case 'lightsOff':       return [69]
     case 'lightsStrobe':    return [84]
     case 'alertsOne':       return [111]
-    case 'alarmsTwo':       return [117]
-    case 'alarmsOff':       return [105]
-    case 'alarmsSport':     return [73]
+    case 'alertsTwo':       return [117]
+    case 'alertsPwm':       return [105]
+    case 'alertsTiltback':  return [73]
     case 'pedalSoft':       return [115]
     case 'pedalMedium':     return [102]
     case 'pedalHard':       return [104]
@@ -67,10 +67,10 @@ const angleModes = {
 }
 
 const speedAlarmModes = {
-  0: '1 + 2 + PWM',
-  1: '2 + PWM',
-  2: 'PWM only',
-  3: 'Sport'
+  0: 'fixed speed 1 + 2',
+  1: 'fixed speed 2',
+  2: 'PWM beep',
+  3: 'PWM Tiltback'
 }
 
 const faultAlarms = {
@@ -249,6 +249,8 @@ function readSecondMainPacket(data) {
   setField('pedal-mode', pedalModes[pedalMode])
   setField('speed-alarm-mode', speedAlarmModes[speedAlarmMode])
   setField('angle-mode', angleModes[tiltAngleMode])
+
+  document.getElementById(`alert${speedAlarmMode}`).setAttribute('checked', true)
 
   powerOffTime = data.getUint16(12)
   powerOffMinutes = Math.floor(powerOffTime / 60)

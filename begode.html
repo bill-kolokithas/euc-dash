@@ -106,6 +106,19 @@
                   <label class="col-lg-5 col-form-label" for="speed-alarm-mode">Speed alarm mode:</label>
                   <div class="col-lg-7">
                     <input class="form-control" id="speed-alarm-mode" type="text" value="" disabled readonly>
+                    <div class="btn-group" role="group">
+                      <input type="radio" class="btn-check" name="btnradio" id="alert0" autocomplete="off" onclick="sendCommand('alertsOne')">
+                      <label class="btn btn-outline-primary" for="alert0">1</label>
+
+                      <input type="radio" class="btn-check" name="btnradio" id="alert1" autocomplete="off" onclick="sendCommand('alertsTwo')">
+                      <label class="btn btn-outline-primary" for="alert1">2</label>
+
+                      <input type="radio" class="btn-check" name="btnradio" id="alert2" autocomplete="off" onclick="sendCommand('alertsPwm')">
+                      <label class="btn btn-outline-primary" for="alert2">PWM</label>
+
+                      <input type="radio" class="btn-check" name="btnradio" id="alert3" autocomplete="off" onclick="sendCommand('alertsTiltback')">
+                      <label class="btn btn-outline-primary" for="alert3">Tiltback</label>
+                    </div>
                   </div>
                 </div>
                 <div class="mb-2 row">
