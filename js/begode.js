@@ -1,3 +1,4 @@
+const debug = new URL(window.location.href).searchParams.get('debug')
 const Decoder = new TextDecoder()
 const maxCellVolt = 4.2
 const baseCellSeries = 16
@@ -347,6 +348,9 @@ function readExtendedPackets(event) {
       appendTempHelp()
       rendered = true
     }
+
+    if (debug)
+      console.log(line)
 
     line = ''
   }
