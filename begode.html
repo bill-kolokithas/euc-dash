@@ -99,52 +99,125 @@
                 <div class="mb-2 row">
                   <label class="col-lg-5 col-form-label" for="tiltback-speed">Tiltback speed:</label>
                   <div class="col-lg-7">
-                    <input class="form-control" id="tiltback-speed" type="text" value="" disabled readonly>
+                    <label for="tiltback-speed" class="form-label" id="tiltback-speed-label"></label>
+                    <input type="range" class="form-range" name="tiltback-speeds" min="0" max="100" id="tiltback-speed" oninput="document.getElementById('tiltback-speed-label').innerHTML=this.value" onmouseup="setTiltbackSpeed(this.value)" ontouchend="setTiltbackSpeed(this.value)">
                   </div>
                 </div>
                 <div class="mb-2 row">
-                  <label class="col-lg-5 col-form-label" for="speed-alarm-mode">Speed alarm mode:</label>
+                  <label class="col-lg-5 col-form-label" for="speed-alert-mode">Speed alert mode:</label>
                   <div class="col-lg-7">
-                    <input class="form-control" id="speed-alarm-mode" type="text" value="" disabled readonly>
                     <div class="btn-group" role="group">
-                      <input type="radio" class="btn-check" name="btnradio" id="alert0" autocomplete="off" onclick="sendCommand('alertsOne')">
-                      <label class="btn btn-outline-primary" for="alert0">1</label>
+                      <input type="radio" class="btn-check" name="speed-alerts" id="speed-alert-0" onclick="sendCommand('alertsOne')">
+                      <label class="btn btn-outline-primary" for="speed-alert-0">1</label>
 
-                      <input type="radio" class="btn-check" name="btnradio" id="alert1" autocomplete="off" onclick="sendCommand('alertsTwo')">
-                      <label class="btn btn-outline-primary" for="alert1">2</label>
+                      <input type="radio" class="btn-check" name="speed-alerts" id="speed-alert-1" onclick="sendCommand('alertsTwo')">
+                      <label class="btn btn-outline-primary" for="speed-alert-1">2</label>
 
-                      <input type="radio" class="btn-check" name="btnradio" id="alert2" autocomplete="off" onclick="sendCommand('alertsPwm')">
-                      <label class="btn btn-outline-primary" for="alert2">PWM</label>
+                      <input type="radio" class="btn-check" name="speed-alerts" id="speed-alert-2" onclick="sendCommand('alertsOff')">
+                      <label class="btn btn-outline-primary" for="speed-alert-2">Off</label>
 
-                      <input type="radio" class="btn-check" name="btnradio" id="alert3" autocomplete="off" onclick="sendCommand('alertsTiltback')">
-                      <label class="btn btn-outline-primary" for="alert3">Tiltback</label>
+                      <input type="radio" class="btn-check" name="speed-alerts" id="speed-alert-3" onclick="sendCommand('alertsTiltback')">
+                      <label class="btn btn-outline-primary" for="speed-alert-3">Tiltback</label>
                     </div>
                   </div>
                 </div>
                 <div class="mb-2 row">
                   <label class="col-lg-5 col-form-label" for="pedal-mode">Pedal mode:</label>
                   <div class="col-lg-7">
-                    <input class="form-control" id="pedal-mode" type="text" value="" disabled readonly>
+                    <div class="btn-group" role="group">
+                      <input type="radio" class="btn-check" name="pedal-modes" id="pedal-mode-0" onclick="sendCommand('pedalSoft')">
+                      <label class="btn btn-outline-primary" for="pedal-mode-0">Soft</label>
+
+                      <input type="radio" class="btn-check" name="pedal-modes" id="pedal-mode-1" onclick="sendCommand('pedalMedium')">
+                      <label class="btn btn-outline-primary" for="pedal-mode-1">Medium</label>
+
+                      <input type="radio" class="btn-check" name="pedal-modes" id="pedal-mode-2" onclick="sendCommand('pedalHard')">
+                      <label class="btn btn-outline-primary" for="pedal-mode-2">Hard</label>
+                    </div>
                   </div>
                 </div>
                 <div class="mb-2 row">
-                  <label class="col-lg-5 col-form-label" for="angle-mode">Angle mode:</label>
+                  <label class="col-lg-5 col-form-label" for="angle-mode">Tilt Angle mode:</label>
                   <div class="col-lg-7">
-                    <input class="form-control" id="angle-mode" type="text" value="" disabled readonly>
+                    <div class="btn-group" role="group">
+                      <input type="radio" class="btn-check" name="tilt-angles" id="tilt-angle-0" onclick="sendCommand('tiltAngleLow')">
+                      <label class="btn btn-outline-primary" for="tilt-angle-0">Low</label>
+
+                      <input type="radio" class="btn-check" name="tilt-angles" id="tilt-angle-1" onclick="sendCommand('tiltAngleMedium')">
+                      <label class="btn btn-outline-primary" for="tilt-angle-1">Medium</label>
+
+                      <input type="radio" class="btn-check" name="tilt-angles" id="tilt-angle-2" onclick="sendCommand('tiltAngleHigh')">
+                      <label class="btn btn-outline-primary" for="tilt-angle-2">High</label>
+                    </div>
                   </div>
                 </div>
                 <div class="mb-2 row">
                   <label class="col-lg-5 col-form-label" for="led-mode">LED mode:</label>
                   <div class="col-lg-7">
-                    <input class="form-control" id="led-mode" type="text" value="" disabled readonly>
-                    <small class="form-text text-muted">0 - 9 (some wheels have less)</small>
+                    <div class="btn-group" role="group">
+                      <input type="radio" class="btn-check" name="led-modes" id="led-mode-0" onclick="sendCommand('ledMode', 0)">
+                      <label class="btn btn-outline-primary" for="led-mode-0">0</label>
+
+                      <input type="radio" class="btn-check" name="led-modes" id="led-mode-1" onclick="sendCommand('ledMode', 1)">
+                      <label class="btn btn-outline-primary" for="led-mode-1">1</label>
+
+                      <input type="radio" class="btn-check" name="led-modes" id="led-mode-2" onclick="sendCommand('ledMode', 2)">
+                      <label class="btn btn-outline-primary" for="led-mode-2">2</label>
+
+                      <input type="radio" class="btn-check" name="led-modes" id="led-mode-3" onclick="sendCommand('ledMode', 3)">
+                      <label class="btn btn-outline-primary" for="led-mode-3">3</label>
+
+                      <input type="radio" class="btn-check" name="led-modes" id="led-mode-4" onclick="sendCommand('ledMode', 4)">
+                      <label class="btn btn-outline-primary" for="led-mode-4">4</label>
+
+                      <input type="radio" class="btn-check" name="led-modes" id="led-mode-5" onclick="sendCommand('ledMode', 5)">
+                      <label class="btn btn-outline-primary" for="led-mode-5">5</label>
+
+                      <input type="radio" class="btn-check" name="led-modes" id="led-mode-6" onclick="sendCommand('ledMode', 6)">
+                      <label class="btn btn-outline-primary" for="led-mode-6">6</label>
+
+                      <input type="radio" class="btn-check" name="led-modes" id="led-mode-7" onclick="sendCommand('ledMode', 7)">
+                      <label class="btn btn-outline-primary" for="led-mode-7">7</label>
+
+                      <input type="radio" class="btn-check" name="led-modes" id="led-mode-8" onclick="sendCommand('ledMode', 8)">
+                      <label class="btn btn-outline-primary" for="led-mode-8">8</label>
+
+                      <input type="radio" class="btn-check" name="led-modes" id="led-mode-9" onclick="sendCommand('ledMode', 9)">
+                      <label class="btn btn-outline-primary" for="led-mode-9">9</label>
+                    </div>
                   </div>
                 </div>
                 <div class="mb-2 row">
                   <label class="col-lg-5 col-form-label" for="volume">Volume:</label>
                   <div class="col-lg-7">
-                    <input class="form-control" id="volume" type="text" value="" disabled readonly>
-                    <small class="form-text text-muted">1 - 9</small>
+                    <div class="btn-group" role="group">
+                      <input type="radio" class="btn-check" name="volume-levels" id="volume-1" onclick="sendCommand('volume', 1)">
+                      <label class="btn btn-outline-primary" for="volume-1">1</label>
+
+                      <input type="radio" class="btn-check" name="volume-levels" id="volume-2" onclick="sendCommand('volume', 2)">
+                      <label class="btn btn-outline-primary" for="volume-2">2</label>
+
+                      <input type="radio" class="btn-check" name="volume-levels" id="volume-3" onclick="sendCommand('volume', 3)">
+                      <label class="btn btn-outline-primary" for="volume-3">3</label>
+
+                      <input type="radio" class="btn-check" name="volume-levels" id="volume-4" onclick="sendCommand('volume', 4)">
+                      <label class="btn btn-outline-primary" for="volume-4">4</label>
+
+                      <input type="radio" class="btn-check" name="volume-levels" id="volume-5" onclick="sendCommand('volume', 5)">
+                      <label class="btn btn-outline-primary" for="volume-5">5</label>
+
+                      <input type="radio" class="btn-check" name="volume-levels" id="volume-6" onclick="sendCommand('volume', 6)">
+                      <label class="btn btn-outline-primary" for="volume-6">6</label>
+
+                      <input type="radio" class="btn-check" name="volume-levels" id="volume-7" onclick="sendCommand('volume', 7)">
+                      <label class="btn btn-outline-primary" for="volume-7">7</label>
+
+                      <input type="radio" class="btn-check" name="volume-levels" id="volume-8" onclick="sendCommand('volume', 8)">
+                      <label class="btn btn-outline-primary" for="volume-8">8</label>
+
+                      <input type="radio" class="btn-check" name="volume-levels" id="volume-9" onclick="sendCommand('volume', 9)">
+                      <label class="btn btn-outline-primary" for="volume-9">9</label>
+                    </div>
                   </div>
                 </div>
               </div>

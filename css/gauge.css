@@ -18,3 +18,8 @@
 #gauge-value:after {
   content: '%';
 }
+
+#tiltback-speed-label {
+  display: block;
+  text-align: center;
+}

@@ -38,7 +38,7 @@ function commands(cmd, param) {
     case 'lightsStrobe':    return [84]
     case 'alertsOne':       return [111]
     case 'alertsTwo':       return [117]
-    case 'alertsPwm':       return [105]
+    case 'alertsOff':       return [105]
     case 'alertsTiltback':  return [73]
     case 'pedalSoft':       return [115]
     case 'pedalMedium':     return [102]
@@ -47,31 +47,13 @@ function commands(cmd, param) {
     case 'tiltAngleMedium': return [61]
     case 'tiltAngleHigh':   return [62]
     case 'calibrate':       return [99, 121]
+    case 'startIAP':        return [33, 64]
     case 'tiltbackOff':     return [34]
     case 'tiltbackSpeed':   return [87, 89, param / 10 + 48, param % 10 + 48]
     case 'volume':          return [87, 66, 48 + param]
     case 'ledMode':         return [87, 77, 48 + param]
     default:                return cmd
   }
-}
-
-const pedalModes = {
-  0: 'soft',
-  1: 'medium',
-  2: 'hard'
-}
-
-const angleModes = {
-  0: 'low',
-  1: 'medium',
-  2: 'high'
-}
-
-const speedAlarmModes = {
-  0: 'fixed speed 1 + 2',
-  1: 'fixed speed 2',
-  2: 'PWM beep',
-  3: 'PWM Tiltback'
 }
 
 const faultAlarms = {
@@ -86,7 +68,10 @@ const faultAlarms = {
 }
 
 async function sendCommand(cmd, param) {
-  await characteristic.writeValue(new Uint8Array(commands(cmd, param)))
+  for (let byte of commands(cmd, param)) {
+    await characteristic.writeValue(new Uint8Array([byte]))
+    await new Promise(r => setTimeout(r, 250))
+  }
 }
 
 async function scan() {
@@ -121,23 +106,33 @@ function disconnect() {
   document.getElementById('packet-switch').classList.add('invisible')
 }
 
-async function startYmodem() {
-  await sendCommand([33])
-  setTimeout(() => sendCommand([64]), 200)
+async function startIAP() {
+  await sendCommand('startIAP')
   characteristic.removeEventListener('characteristicvaluechanged', readMainPackets)
   characteristic.addEventListener('characteristicvaluechanged',
     (data) => console.log(Decoder.decode(data.target.value)))
 }
 
-async function exitYmodem() {
-  await sendCommand([37])
+async function startYmodem() {
   await sendCommand([1])
+}
+
+async function exitYmodem() {
   await sendCommand([1, 0, 255, 65, 0, 1, 0].concat(Array(13).fill(0)))
 
   for (i = 0; i < 5; i++)
     await sendCommand(Array(20).fill(0))
 
   await sendCommand(Array(11).fill(0).concat([19, 77]))
+}
+
+async function setTiltbackSpeed(speed) {
+  speed = parseInt(speed)
+
+  if (speed == 0 || speed == 100)
+    await sendCommand('tiltbackOff')
+  else
+    await sendCommand('tiltbackSpeed', speed)
 }
 
 function setField(field, val) {
@@ -236,7 +231,7 @@ function readFirstMainPacket(data) {
   setField('resets', resets)
 
   volume = data.getInt16(16)
-  setField('volume', volume)
+  document.getElementById(`volume-${volume}`).setAttribute('checked', true)
 }
 
 function readSecondMainPacket(data) {
@@ -247,11 +242,10 @@ function readSecondMainPacket(data) {
   pedalMode      = modes >> 13 & 0x3
   speedAlarmMode = modes >> 10 & 0x3
   tiltAngleMode  = modes >>  7 & 0x3
-  setField('pedal-mode', pedalModes[pedalMode])
-  setField('speed-alarm-mode', speedAlarmModes[speedAlarmMode])
-  setField('angle-mode', angleModes[tiltAngleMode])
 
-  document.getElementById(`alert${speedAlarmMode}`).setAttribute('checked', true)
+  document.getElementById(`pedal-mode-${pedalMode}`).setAttribute('checked', true)
+  document.getElementById(`speed-alert-${speedAlarmMode}`).setAttribute('checked', true)
+  document.getElementById(`tilt-angle-${tiltAngleMode}`).setAttribute('checked', true)
 
   powerOffTime = data.getUint16(12)
   powerOffMinutes = Math.floor(powerOffTime / 60)
@@ -259,10 +253,11 @@ function readSecondMainPacket(data) {
   setField('poweroff-timer', `${powerOffMinutes}:${powerOffSeconds}`)
 
   tiltbackSpeed = data.getUint16(14)
-  setField('tiltback-speed', tiltbackSpeed)
+  document.getElementById('tiltback-speed-label').innerHTML = tiltbackSpeed == 100 ? 'Disabled' : tiltbackSpeed
+  document.getElementById('tiltback-speed').value = tiltbackSpeed
 
   ledMode = data.getUint16(16)
-  setField('led-mode', ledMode)
+  document.getElementById(`led-mode-${ledMode}`).setAttribute('checked', true)
 
   faultAlarm = data.getUint8(18)
   faultAlarmLine = ''
@@ -281,9 +276,9 @@ function readSecondMainPacket(data) {
 function readMainPackets(event) {
   data = event.target.value
 
-  if (data.getInt16(0) == 0x55AA) {
+  if (data.getInt16(0) == 0x55AA && data.byteLength == 20) {
     readFirstMainPacket(data)
-  } else if (data.getUint16(0) == 0x5A5A) {
+  } else if (data.getUint16(0) == 0x5A5A && data.byteLength == 20) {
     readSecondMainPacket(data)
   } else if (data.getUint32(0) == 0x4E414D45) {
     setWheelModel(data)
