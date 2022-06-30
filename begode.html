@@ -152,6 +152,18 @@
                   </div>
                 </div>
                 <div class="mb-2 row">
+                  <label class="col-lg-5 col-form-label" for="speed-formula">Speed formula:</label>
+                  <div class="col-lg-7">
+                    <div class="btn-group" role="group">
+                      <input type="radio" class="btn-check" name="speed-formulas" id="speed-formula-0" onclick="sendCommand('speedKilometers')">
+                      <label class="btn btn-outline-primary" for="speed-formula-0">kilometers</label>
+
+                      <input type="radio" class="btn-check" name="speed-formulas" id="speed-formula-1" onclick="sendCommand('speedMiles')">
+                      <label class="btn btn-outline-primary" for="speed-formula-1">miles</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="mb-2 row">
                   <label class="col-lg-5 col-form-label" for="led-mode">LED mode:</label>
                   <div class="col-lg-7">
                     <div class="btn-group" role="group">

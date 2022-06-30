@@ -46,6 +46,8 @@ function commands(cmd, param) {
     case 'rollAngleLow':    return [62]
     case 'rollAngleMedium': return [61]
     case 'rollAngleHigh':   return [60]
+    case 'speedKilometers': return [103]
+    case 'speedMiles':      return [109]
     case 'calibrate':       return [99, 121]
     case 'startIAP':        return [33, 64]
     case 'tiltbackOff':     return [34]
@@ -242,10 +244,12 @@ function readSecondMainPacket(data) {
   pedalMode      = modes >> 13 & 0x3
   speedAlarmMode = modes >> 10 & 0x3
   rollAngleMode  = modes >>  7 & 0x3
+  speedFormula   = modes >>  4 & 0x1
 
   document.getElementById(`pedal-mode-${pedalMode}`).setAttribute('checked', true)
   document.getElementById(`speed-alert-${speedAlarmMode}`).setAttribute('checked', true)
   document.getElementById(`roll-angle-${rollAngleMode}`).setAttribute('checked', true)
+  document.getElementById(`speed-formula-${speedFormula}`).setAttribute('checked', true)
 
   powerOffTime = data.getUint16(12)
   powerOffMinutes = Math.floor(powerOffTime / 60)
