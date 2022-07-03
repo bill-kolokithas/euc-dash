@@ -244,12 +244,12 @@ function readSecondMainPacket(data) {
   pedalMode      = modes >> 13 & 0x3
   speedAlarmMode = modes >> 10 & 0x3
   rollAngleMode  = modes >>  7 & 0x3
-  speedFormula   = modes >>  4 & 0x1
+  speedUnit      = modes >>  4 & 0x1
 
   document.getElementById(`pedal-mode-${pedalMode}`).setAttribute('checked', true)
   document.getElementById(`speed-alert-${speedAlarmMode}`).setAttribute('checked', true)
   document.getElementById(`roll-angle-${rollAngleMode}`).setAttribute('checked', true)
-  document.getElementById(`speed-formula-${speedFormula}`).setAttribute('checked', true)
+  document.getElementById(`speed-unit-${speedUnit}`).setAttribute('checked', true)
 
   powerOffTime = data.getUint16(12)
   powerOffMinutes = Math.floor(powerOffTime / 60)
