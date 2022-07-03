@@ -239,6 +239,33 @@
             </div>
             <div class="card mb-2 col-lg-6">
               <div class="card-header">
+                Wheel actions
+              </div>
+              <div class="card-body">
+                <div class="mb-2 row">
+                  <label class="col-lg-5 col-form-label">Beeps:</label>
+                  <div class="col-lg-7">
+                    <button type="button" class="btn-lg btn-info" onclick="sendCommand('beep')">Trigger</button>
+                  </div>
+                </div>
+                <div class="mb-2 row">
+                  <label class="col-lg-5 col-form-label">Lights:</label>
+                  <div class="col-lg-7">
+                    <button type="button" class="btn-lg btn-info" onclick="sendCommand('lightsOn')">On</button>
+                    <button type="button" class="btn-lg btn-info" onclick="sendCommand('lightsOff')">Off</button>
+                    <button type="button" class="btn-lg btn-info" onclick="sendCommand('lightsStrobe')">Strobe</button>
+                  </div>
+                </div>
+                <div class="mb-2 row">
+                  <label class="col-lg-5 col-form-label">Calibrate:</label>
+                  <div class="col-lg-7">
+                    <button type="button" class="btn-lg btn-info" onclick="sendCommand('calibrate')">Start</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card mb-2 col-lg-6">
+              <div class="card-header">
                 Wheel state
               </div>
               <div class="card-body">
