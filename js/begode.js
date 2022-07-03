@@ -93,6 +93,7 @@ async function initialize() {
   pwmAlarmSpeed = 0
   rendered = false
   wheelModel = ''
+  updateTiltbackSpeed = true
   document.getElementById('scan-disconnect').innerText = 'Disconnect'
   document.getElementById('scan-disconnect').className = 'btn-lg btn-danger'
   document.getElementById('scan-disconnect').onclick = disconnect
@@ -129,6 +130,7 @@ async function exitYmodem() {
 }
 
 async function setTiltbackSpeed(speed) {
+  updateTiltbackSpeed = true
   speed = parseInt(speed)
 
   if (speed == 0 || speed == 100)
@@ -257,8 +259,11 @@ function readSecondMainPacket(data) {
   setField('poweroff-timer', `${powerOffMinutes}:${powerOffSeconds}`)
 
   tiltbackSpeed = data.getUint16(14)
-  document.getElementById('tiltback-speed-label').innerHTML = tiltbackSpeed == 100 ? 'Disabled' : tiltbackSpeed
-  document.getElementById('tiltback-speed').value = tiltbackSpeed
+
+  if (updateTiltbackSpeed) {
+    document.getElementById('tiltback-speed-label').innerHTML = tiltbackSpeed >= 100 ? 'Disabled' : tiltbackSpeed
+    document.getElementById('tiltback-speed').value = tiltbackSpeed
+  }
 
   ledMode = data.getUint16(16)
   document.getElementById(`led-mode-${ledMode}`).setAttribute('checked', true)

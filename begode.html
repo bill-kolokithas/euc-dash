@@ -100,7 +100,10 @@
                   <label class="col-lg-5 col-form-label" for="tiltback-speed">Tiltback speed:</label>
                   <div class="col-lg-7">
                     <label for="tiltback-speed" class="form-label" id="tiltback-speed-label"></label>
-                    <input type="range" class="form-range" name="tiltback-speeds" min="0" max="100" id="tiltback-speed" oninput="document.getElementById('tiltback-speed-label').innerHTML=this.value" onmouseup="setTiltbackSpeed(this.value)" ontouchend="setTiltbackSpeed(this.value)">
+                    <input type="range" class="form-range" name="tiltback-speeds" min="0" max="100" id="tiltback-speed"
+                      oninput="document.getElementById('tiltback-speed-label').innerHTML=this.value"
+                      onmousedown="updateTiltbackSpeed=false" ontouchstart="updateTiltbackSpeed=false"
+                      onchange="setTiltbackSpeed(this.value)">
                   </div>
                 </div>
                 <div class="mb-2 row">
