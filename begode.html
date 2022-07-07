@@ -106,6 +106,15 @@
                       onchange="setTiltbackSpeed(this.value)">
                   </div>
                 </div>
+                <div class="mb-2 row" id="pwm-limit-slider" style="display:none">
+                  <label class="col-lg-5 col-form-label" for="pwm-limit">PWM limit:</label>
+                  <div class="col-lg-7">
+                    <label for="pwm-limit" class="form-label" id="pwm-limit-label"></label>
+                    <input type="range" class="form-range" name="pwm-limits" min="50" max="90" id="pwm-limit"
+                      oninput="document.getElementById('pwm-limit-label').innerHTML=this.value"
+                      onchange="sendCommand('pwmLimit', parseInt(this.value))">
+                  </div>
+                </div>
                 <div class="mb-2 row">
                   <label class="col-lg-5 col-form-label" for="speed-alert-mode">Speed alert mode:</label>
                   <div class="col-lg-7">

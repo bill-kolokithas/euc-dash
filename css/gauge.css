@@ -23,3 +23,8 @@
   display: block;
   text-align: center;
 }
+
+#pwm-limit-label {
+  display: block;
+  text-align: center;
+}

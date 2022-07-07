@@ -147,6 +147,11 @@ function setField(field, val) {
 async function setWheelModel(data) {
   wheelModel = Decoder.decode(data.buffer.slice(5)).trim()
   setField('wheel-model', wheelModel)
+
+  if (wheelModel == 'Master') {
+    showPwmLimitSetting()
+  }
+
   await sendCommand('fetchModelCode')
 }
 
@@ -158,6 +163,12 @@ function setWheelCodeName(data) {
 function setImuModel(data) {
   imuModel = Decoder.decode(data.buffer.slice(1, 8))
   setField('imu-model', imuModel)
+}
+
+function showPwmLimitSetting() {
+  document.getElementById('pwm-limit').value = 80
+  document.getElementById('pwm-limit-label').innerHTML = 80
+  document.getElementById('pwm-limit-slider').style.display = null
 }
 
 async function switchToMainPackets() {
