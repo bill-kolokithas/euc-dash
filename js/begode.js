@@ -52,6 +52,7 @@ function commands(cmd, param) {
     case 'startIAP':        return [33, 64]
     case 'tiltbackOff':     return [34]
     case 'tiltbackSpeed':   return [87, 89, param / 10 + 48, param % 10 + 48]
+    case 'pwmLimit':        return [87, 80, param / 10 + 48, param % 10 + 48]
     case 'volume':          return [87, 66, 48 + param]
     case 'ledMode':         return [87, 77, 48 + param]
     default:                return cmd
@@ -244,14 +245,14 @@ function readSecondMainPacket(data) {
 
   modes = data.getUint16(10)
   pedalMode      = modes >> 13 & 0x3
-  speedAlarmMode = modes >> 10 & 0x3
+  speedAlertMode = modes >> 10 & 0x3
   rollAngleMode  = modes >>  7 & 0x3
-  speedUnit      = modes >>  4 & 0x1
+  speedUnitMode  = modes >>  4 & 0x1
 
   document.getElementById(`pedal-mode-${pedalMode}`).setAttribute('checked', true)
-  document.getElementById(`speed-alert-${speedAlarmMode}`).setAttribute('checked', true)
+  document.getElementById(`speed-alert-${speedAlertMode}`).setAttribute('checked', true)
   document.getElementById(`roll-angle-${rollAngleMode}`).setAttribute('checked', true)
-  document.getElementById(`speed-unit-${speedUnit}`).setAttribute('checked', true)
+  document.getElementById(`speed-unit-${speedUnitMode}`).setAttribute('checked', true)
 
   powerOffTime = data.getUint16(12)
   powerOffMinutes = Math.floor(powerOffTime / 60)
