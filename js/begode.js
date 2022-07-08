@@ -238,6 +238,7 @@ function readFirstMainPacket(data) {
   phaseCurrent = data.getInt16(10) / 100
   setField('phase-current', phaseCurrent)
 
+  // MPU6050 format
   temp = (data.getInt16(12) / 340 + 36.53).toFixed(2)
   setField('temp', temp)
 
@@ -247,7 +248,7 @@ function readFirstMainPacket(data) {
   setField('resets', resets)
 
   volume = data.getInt16(16)
-  document.getElementById(`volume-${volume}`).setAttribute('checked', true)
+  document.getElementById(`volume-${volume}`).checked = true
 }
 
 function readSecondMainPacket(data) {
@@ -260,10 +261,10 @@ function readSecondMainPacket(data) {
   rollAngleMode  = modes >>  7 & 0x3
   speedUnitMode  = modes >>  4 & 0x1
 
-  document.getElementById(`pedal-mode-${pedalMode}`).setAttribute('checked', true)
-  document.getElementById(`speed-alert-${speedAlertMode}`).setAttribute('checked', true)
-  document.getElementById(`roll-angle-${rollAngleMode}`).setAttribute('checked', true)
-  document.getElementById(`speed-unit-${speedUnitMode}`).setAttribute('checked', true)
+  document.getElementById(`pedal-mode-${pedalMode}`).checked = true
+  document.getElementById(`speed-alert-${speedAlertMode}`).checked = true
+  document.getElementById(`roll-angle-${rollAngleMode}`).checked = true
+  document.getElementById(`speed-unit-${speedUnitMode}`).checked = true
 
   powerOffTime = data.getUint16(12)
   powerOffMinutes = Math.floor(powerOffTime / 60)
@@ -278,7 +279,7 @@ function readSecondMainPacket(data) {
   }
 
   ledMode = data.getUint16(16)
-  document.getElementById(`led-mode-${ledMode}`).setAttribute('checked', true)
+  document.getElementById(`led-mode-${ledMode}`).checked = true
 
   faultAlarm = data.getUint8(18)
   faultAlarmLine = ''
@@ -294,7 +295,7 @@ function readSecondMainPacket(data) {
     updatePwmAlarmSpeed()
 
   lightMode = data.getUint8(19)
-  document.getElementById(`light-mode-${lightMode}`).setAttribute('checked', true)
+  document.getElementById(`light-mode-${lightMode}`).checked = true
 }
 
 function readMainPackets(event) {
@@ -326,14 +327,6 @@ function appendElement(key, value) {
   `
 }
 
-function appendTempHelp() {
-  tempElement = document.getElementById('Tem')
-  tempHelp = document.createElement('small')
-  tempHelp.className = 'form-text text-muted'
-  tempHelp.textContent = 'MPU6500 format'
-  tempElement.after(tempHelp)
-}
-
 function readExtendedPackets(event) {
   fragment = Decoder.decode(event.target.value)
   if (line == '')
@@ -354,7 +347,7 @@ function readExtendedPackets(event) {
 
     tempIndex = keys.indexOf('Tem')
     if (tempIndex != 1)
-      values[tempIndex] = (values[tempIndex] / 333.87 + 21.0).toFixed(2)
+      values[tempIndex] = (values[tempIndex] / 333.87 + 21.0).toFixed(2) // MPU6500 format
 
     if (rendered) {
       try { keys.forEach((key, i) => setField(key, values[i])) }
@@ -364,7 +357,6 @@ function readExtendedPackets(event) {
       html = ''
       keys.forEach((key, i) => html += appendElement(key, values[i]))
       document.getElementById('extended-data').innerHTML = html
-      appendTempHelp()
       rendered = true
     }
 
