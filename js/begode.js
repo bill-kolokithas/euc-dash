@@ -292,6 +292,9 @@ function readSecondMainPacket(data) {
 
   if (faultAlarm & 0x1 && (pwmAlarmSpeed == 0 || speed < pwmAlarmSpeed))
     updatePwmAlarmSpeed()
+
+  lightMode = data.getUint8(19)
+  document.getElementById(`light-mode-${lightMode}`).setAttribute('checked', true)
 }
 
 function readMainPackets(event) {
