@@ -31,7 +31,6 @@ function commands(cmd, param) {
     case 'extendedPacket':  return [107]
     case 'fetchModel':      return [78]
     case 'fetchModelCode':  return [86]
-    case 'fetchGreet':      return [103]
     case 'beep':            return [98]
     case 'lightsOn':        return [81]
     case 'lightsOff':       return [69]
