@@ -159,11 +159,6 @@ function setWheelCodeName(data) {
   setField('wheel-code-name', wheelCodeName)
 }
 
-function setImuModel(data) {
-  imuModel = Decoder.decode(data.buffer.slice(1, 8))
-  setField('imu-model', imuModel)
-}
-
 function showPwmLimitSetting() {
   document.getElementById('pwm-limit').value = 80
   document.getElementById('pwm-limit-label').innerHTML = 80
@@ -308,8 +303,6 @@ function readMainPackets(event) {
     setWheelModel(data)
   } else if (data.getInt16(0) == 0x4757) {
     setWheelCodeName(data)
-  } else if (data.getInt32(0) == 0x204D5055) {
-    setImuModel(data)
   } else {
     // unhandled packet
   }
