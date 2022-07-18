@@ -94,6 +94,7 @@ async function initialize() {
   pwmAlarmSpeed = 0
   rendered = false
   wheelModel = ''
+  wheelCodeName = ''
   updateTiltbackSpeed = true
   logs = ''
   document.getElementById('scan-disconnect').innerText = 'Disconnect'
@@ -119,7 +120,7 @@ function saveLogs() {
   var a = document.getElementById('save-logs')
   var file = new Blob([logs], { type: 'text/plain' })
   a.href = URL.createObjectURL(file)
-  a.download = 'euc-dash-logs.txt'
+  a.download = `euc-dash-logs-${wheelModel}-${wheelCodeName}.txt`
 }
 
 async function startIAP() {
