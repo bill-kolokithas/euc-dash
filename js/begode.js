@@ -95,10 +95,14 @@ async function initialize() {
   rendered = false
   wheelModel = ''
   updateTiltbackSpeed = true
+  logs = ''
   document.getElementById('scan-disconnect').innerText = 'Disconnect'
   document.getElementById('scan-disconnect').className = 'btn-lg btn-danger'
   document.getElementById('scan-disconnect').onclick = disconnect
   document.getElementById('packet-switch').classList.remove('invisible')
+  if (debug)
+    document.getElementById('save-logs').classList.remove('invisible')
+
   await sendCommand('fetchModel')
 }
 
@@ -108,6 +112,14 @@ function disconnect() {
   document.getElementById('scan-disconnect').className = 'btn-lg btn-primary'
   document.getElementById('scan-disconnect').onclick = scan
   document.getElementById('packet-switch').classList.add('invisible')
+  document.getElementById('save-logs').classList.add('invisible')
+}
+
+function saveLogs() {
+  var a = document.getElementById('save-logs')
+  var file = new Blob([logs], { type: 'text/plain' })
+  a.href = URL.createObjectURL(file)
+  a.download = 'euc-dash-logs.txt'
 }
 
 async function startIAP() {
@@ -296,6 +308,9 @@ function readSecondMainPacket(data) {
 function readMainPackets(event) {
   data = event.target.value
 
+  if (debug)
+    logs += new Uint8Array(data.buffer).toString() + "\n"
+
   if (data.getInt16(0) == 0x55AA && data.byteLength == 20) {
     readFirstMainPacket(data)
   } else if (data.getUint16(0) == 0x5A5A && data.byteLength == 20) {
@@ -354,7 +369,7 @@ function readExtendedPackets(event) {
     }
 
     if (debug)
-      console.log(line)
+      logs += line.replace('\r', '')
 
     line = ''
   }
