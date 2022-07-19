@@ -8,7 +8,6 @@ function modelParams() {
     case 'Mten3':       return { 'voltMultiplier': 1.25, 'minCellVolt': 3.3 }
     case 'MCM5':        return { 'voltMultiplier': 1.25, 'minCellVolt': 3.3 }
     case 'T3':          return { 'voltMultiplier': 1.25, 'minCellVolt': 3.25 }
-    case 'Nikola':      return { 'voltMultiplier': 1.50, 'minCellVolt': 3.25 }
     case 'Msuper Pro':  return { 'voltMultiplier': 1.50, 'minCellVolt': 3.25 }
     case 'MSP C30':     return { 'voltMultiplier': 1.50, 'minCellVolt': 3.25 }
     case 'MSP C38':     return { 'voltMultiplier': 1.50, 'minCellVolt': 3.25 }
@@ -16,11 +15,13 @@ function modelParams() {
     case 'RS C38':      return { 'voltMultiplier': 1.50, 'minCellVolt': 3.25 }
     case 'EX':          return { 'voltMultiplier': 1.50, 'minCellVolt': 3.25 }
     case 'Monster':     return { 'voltMultiplier': 1.50, 'minCellVolt': 3.25 }
-    case 'EXN':         return { 'voltMultiplier': 1.50, 'minCellVolt': 3.15 }
     case 'HERO':        return { 'voltMultiplier': 1.50, 'minCellVolt': 3.1 }
-    case 'Monster Pro': return { 'voltMultiplier': 1.50, 'minCellVolt': 3.1 }
+    case 'Nikola':      return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
+    case 'EXN C30':     return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
+    case 'EXN C38':     return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
     case 'EX20S C30':   return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
     case 'EX20S C38':   return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
+    case 'Monster Pro': return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
     case 'Master':      return { 'voltMultiplier': 2,    'minCellVolt': 3.05 }
     default:            return { 'voltMultiplier': 1,    'minCellVolt': 3.3 }
   }
