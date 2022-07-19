@@ -161,16 +161,17 @@ async function setWheelModel(data) {
   wheelModel = Decoder.decode(data.buffer.slice(5)).trim()
   setField('wheel-model', wheelModel)
 
-  if (wheelModel == 'Master') {
-    showPwmLimitSetting()
-  }
-
   await sendCommand('fetchModelCode')
 }
 
 function setWheelCodeName(data) {
   wheelCodeName = Decoder.decode(data.buffer.slice(2))
   setField('wheel-code-name', wheelCodeName)
+
+  // Master latest firmware
+  if (wheelCodeName == '2014003') {
+    showPwmLimitSetting()
+  }
 }
 
 function showPwmLimitSetting() {
@@ -355,7 +356,7 @@ function readExtendedPackets(event) {
     }
 
     tempIndex = keys.indexOf('Tem')
-    if (tempIndex != 1)
+    if (tempIndex != -1)
       values[tempIndex] = (values[tempIndex] / 333.87 + 21.0).toFixed(2) // MPU6500 format
 
     if (rendered) {
