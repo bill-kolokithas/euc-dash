@@ -102,8 +102,7 @@ async function initialize() {
   document.getElementById('scan-disconnect').className = 'btn-lg btn-danger'
   document.getElementById('scan-disconnect').onclick = disconnect
   document.getElementById('packet-switch').classList.remove('invisible')
-  if (debug)
-    document.getElementById('save-logs').classList.remove('invisible')
+  document.getElementById('save-logs').classList.remove('invisible')
 
   await sendCommand('fetchModel')
 }
@@ -311,8 +310,7 @@ function readSecondMainPacket(data) {
 function readMainPackets(event) {
   data = event.target.value
 
-  if (debug)
-    logs += new Uint8Array(data.buffer).join(' ') + "\n"
+  logs += new Uint8Array(data.buffer).join(' ') + "\n"
 
   if (data.getInt16(0) == 0x55AA && data.byteLength == 20) {
     readFirstMainPacket(data)
@@ -346,6 +344,8 @@ function readExtendedPackets(event) {
     line += fragment;
 
   if (fragment.endsWith('\r\n')) {
+    logs += line.replace('\r', '')
+
     keys = line.match(/[A-z/=]+/g)
     keys = keys.map(l => l.split('=')[0])
     values = line.match(/-?\d+/g)
@@ -373,9 +373,6 @@ function readExtendedPackets(event) {
       document.getElementById('extended-data').innerHTML = html
       rendered = true
     }
-
-    if (debug)
-      logs += line.replace('\r', '')
 
     line = ''
   }
