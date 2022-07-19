@@ -267,7 +267,7 @@ function readSecondMainPacket(data) {
   pedalMode      = modes >> 13 & 0x3
   speedAlertMode = modes >> 10 & 0x3
   rollAngleMode  = modes >>  7 & 0x3
-  speedUnitMode  = modes >>  4 & 0x1
+  speedUnitMode  = modes & 0x1
 
   document.getElementById(`pedal-mode-${pedalMode}`).checked = true
   document.getElementById(`speed-alert-${speedAlertMode}`).checked = true
