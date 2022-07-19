@@ -351,6 +351,9 @@ function readExtendedPackets(event) {
     values = line.match(/-?\d+/g)
 
     pwmIndex = keys.indexOf('PWM')
+    if (pwmIndex == -1)
+      pwmIndex = keys.indexOf('pwmmmm')
+
     if (pwmIndex != -1) {
       pwm = Math.abs(values[pwmIndex] / 100).toFixed(1)
       gauge.set(pwm)
