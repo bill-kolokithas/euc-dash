@@ -153,8 +153,8 @@ async function setTiltbackSpeed(speed) {
     await sendCommand('tiltbackSpeed', speed)
 }
 
-function setField(field, val) {
-  document.getElementById(field).value = val
+function setField(field, value) {
+  document.getElementById(field).value = value
 }
 
 async function setWheelModel(data) {
@@ -349,7 +349,7 @@ function readExtendedPackets(event) {
     values = line.match(/-?\d+/g)
 
     pwmIndex = keys.indexOf('PWM')
-    if (pwmIndex != 1) {
+    if (pwmIndex != -1) {
       pwm = Math.abs(values[pwmIndex] / 100).toFixed(1)
       gauge.set(pwm)
     }
