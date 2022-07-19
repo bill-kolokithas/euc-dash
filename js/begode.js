@@ -312,7 +312,7 @@ function readMainPackets(event) {
   data = event.target.value
 
   if (debug)
-    logs += new Uint8Array(data.buffer).toString() + "\n"
+    logs += new Uint8Array(data.buffer).join(' ') + "\n"
 
   if (data.getInt16(0) == 0x55AA && data.byteLength == 20) {
     readFirstMainPacket(data)
