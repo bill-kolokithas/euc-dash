@@ -34,7 +34,7 @@ function commands(cmd, param) {
     case 'mainPacket':      return [44]
     case 'extendedPacket':  return [107]
     case 'fetchModel':      return [78]
-    case 'fetchModelCode':  return [86]
+    case 'fetchFirmware':   return [86]
     case 'beep':            return [98]
     case 'lightsOn':        return [81]
     case 'lightsOff':       return [69]
@@ -102,7 +102,7 @@ async function initialize() {
   pwmAlarmSpeed = 0
   rendered = false
   wheelModel = ''
-  wheelCodeName = ''
+  firmware = ''
   updateTiltbackSpeed = true
   logs = ''
   frame = new Uint8Array(framePacketLength)
@@ -130,7 +130,7 @@ function saveLogs() {
   anchor = document.getElementById('save-logs')
   file = new Blob([logs], { type: 'text/plain' })
   anchor.href = URL.createObjectURL(file)
-  anchor.download = `euc-dash-logs-${wheelModel}-${wheelCodeName}.txt`
+  anchor.download = `euc-dash-logs-${wheelModel}-${firmware}.txt`
 }
 
 async function startIAP() {
@@ -176,15 +176,15 @@ async function setWheelModel(data) {
   wheelModel = Decoder.decode(data.buffer.slice(5)).trim()
   setField('wheel-model', wheelModel)
 
-  await sendCommand('fetchModelCode')
+  await sendCommand('fetchFirmware')
 }
 
-function setWheelCodeName(data) {
-  wheelCodeName = Decoder.decode(data.buffer.slice(2))
-  setField('wheel-code-name', wheelCodeName)
+function setFirmware(data) {
+  firmware = Decoder.decode(data.buffer.slice(2))
+  setField('firmware', firmware)
 
   // Master latest firmware
-  if (wheelCodeName == '2014003') {
+  if (firmware == '2014003') {
     showPwmLimitSetting()
   }
 }
@@ -365,7 +365,7 @@ function handleRegularData(data) {
   if (data.getUint32(0) == 0x4E414D45)
     setWheelModel(data)
   else if (data.getInt16(0) == 0x4757)
-    setWheelCodeName(data)
+    setFirmware(data)
 }
 
 function handleFrameData(data) {
