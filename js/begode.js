@@ -72,7 +72,12 @@ const faultAlarms = {
 }
 
 async function sendCommand(cmd, param) {
-  for (let byte of commands(cmd, param)) {
+  command = commands(cmd, param)
+
+  if (debug)
+    logs += command.join(' ') + "\n"
+
+  for (let byte of command) {
     await characteristic.writeValue(new Uint8Array([byte]))
     await new Promise(r => setTimeout(r, 250))
   }
@@ -98,6 +103,9 @@ async function initialize() {
   wheelCodeName = ''
   updateTiltbackSpeed = true
   logs = ''
+  frame = new Uint8Array(24)
+  previousFrame = new Uint8Array(24)
+  frameLength = 0
   document.getElementById('scan-disconnect').innerText = 'Disconnect'
   document.getElementById('scan-disconnect').className = 'btn-lg btn-danger'
   document.getElementById('scan-disconnect').onclick = disconnect
@@ -117,10 +125,10 @@ function disconnect() {
 }
 
 function saveLogs() {
-  var a = document.getElementById('save-logs')
-  var file = new Blob([logs], { type: 'text/plain' })
-  a.href = URL.createObjectURL(file)
-  a.download = `euc-dash-logs-${wheelModel}-${wheelCodeName}.txt`
+  anchor = document.getElementById('save-logs')
+  file = new Blob([logs], { type: 'text/plain' })
+  anchor.href = URL.createObjectURL(file)
+  anchor.download = `euc-dash-logs-${wheelModel}-${wheelCodeName}.txt`
 }
 
 async function startIAP() {
@@ -153,6 +161,11 @@ async function setTiltbackSpeed(speed) {
     await sendCommand('tiltbackSpeed', speed)
 }
 
+async function setPwmLimit(pwmLimit) {
+  updatePwmLimit = true
+  pwmLimit = parseInt(pwmLimit)
+  await sendCommand('pwmLimit', pwmLimit)
+}
 function setField(field, value) {
   document.getElementById(field).value = value
 }
@@ -225,7 +238,7 @@ function updateVoltageHelpText() {
   voltageHelp.innerText = `min: ${minVoltage}v - max: ${maxVoltage}v`
 }
 
-function readFirstMainPacket(data) {
+function parseFramePacket0(data) {
   voltage = data.getUint16(2) / 100
   scaledVoltage = (voltage * modelParams()['voltMultiplier']).toFixed(1)
   setField('voltage', scaledVoltage)
@@ -260,11 +273,11 @@ function readFirstMainPacket(data) {
   document.getElementById(`volume-${volume}`).checked = true
 }
 
-function readSecondMainPacket(data) {
-  totalDistance = (data.getUint32(6) / 1000).toFixed(2)
+function parseFramePacket4(data) {
+  totalDistance = (data.getUint32(2) / 1000).toFixed(2)
   setField('total-distance', totalDistance)
 
-  modes = data.getUint16(10)
+  modes = data.getUint16(6)
   pedalMode      = modes >> 13 & 0x3
   speedAlertMode = modes >> 10 & 0x3
   rollAngleMode  = modes >>  7 & 0x3
@@ -275,22 +288,21 @@ function readSecondMainPacket(data) {
   document.getElementById(`roll-angle-${rollAngleMode}`).checked = true
   document.getElementById(`speed-unit-${speedUnitMode}`).checked = true
 
-  powerOffTime = data.getUint16(12)
+  powerOffTime = data.getUint16(8)
   powerOffMinutes = Math.floor(powerOffTime / 60)
   powerOffSeconds = powerOffTime - (powerOffMinutes * 60)
   setField('poweroff-timer', `${powerOffMinutes}:${powerOffSeconds}`)
 
-  tiltbackSpeed = data.getUint16(14)
-
+  tiltbackSpeed = data.getUint16(10)
   if (updateTiltbackSpeed) {
     document.getElementById('tiltback-speed-label').innerHTML = tiltbackSpeed >= 100 ? 'Disabled' : tiltbackSpeed
     document.getElementById('tiltback-speed').value = tiltbackSpeed
   }
 
-  ledMode = data.getUint16(16)
+  ledMode = data.getUint16(12)
   document.getElementById(`led-mode-${ledMode}`).checked = true
 
-  faultAlarm = data.getUint8(18)
+  faultAlarm = data.getUint8(12)
   faultAlarmLine = ''
   for (let bit = 0; bit < 8; bit++) {
     if (faultAlarm >> bit & 0x1)
@@ -303,25 +315,62 @@ function readSecondMainPacket(data) {
   if (faultAlarm & 0x1 && (pwmAlarmSpeed == 0 || speed < pwmAlarmSpeed))
     updatePwmAlarmSpeed()
 
-  lightMode = data.getUint8(19)
+  lightMode = data.getUint8(15)
   document.getElementById(`light-mode-${lightMode}`).checked = true
+}
+
+function parseFramePacket1(data) {
+  pwmLimit = data.getUint16(2)
+  if (updatePwmLimit) {
+    document.getElementById('pwm-limit-label').innerHTML = pwmLimit
+    document.getElementById('pwm-limit').value = pwmLimit
+  }
 }
 
 function readMainPackets(event) {
   data = event.target.value
+  array = new Uint8Array(data.buffer)
 
-  logs += new Uint8Array(data.buffer).join(' ') + "\n"
+  if (debug)
+    logs += array.join(' ') + "\n"
 
-  if (data.getInt16(0) == 0x55AA && data.byteLength == 20) {
-    readFirstMainPacket(data)
-  } else if (data.getUint16(0) == 0x5A5A && data.byteLength == 20) {
-    readSecondMainPacket(data)
-  } else if (data.getUint32(0) == 0x4E414D45) {
+  frameStart = array.findIndex((el, idx, arr) => {
+    return arr[idx] == 85 && arr[idx + 1] == 170
+  })
+  frameEnd = array.findIndex((el, idx, arr) => {
+    return arr[idx] == 90 && arr[idx + 1] == 90 && arr[idx + 2] == 90 && arr[idx + 3] == 90
+  })
+
+  if (frameStart == -1 && frameEnd == -1)
+    return handleRegularData(data)
+
+  if (frameEnd != -1) {
+    frame.set(previousFrame)
+    frame.set(array.slice(0, frameEnd + 4), frameLength)
+    if (!debug)
+      logs += frame.join(' ') + "\n"
+
+    handleFrameData(new DataView(frame.buffer))
+  }
+
+  if (frameStart != -1) {
+    frameLength = 20 - frameStart
+    previousFrame.set(array.slice(frameStart))
+  }
+}
+
+function handleRegularData(data) {
+  if (data.getUint32(0) == 0x4E414D45)
     setWheelModel(data)
-  } else if (data.getInt16(0) == 0x4757) {
+  else if (data.getInt16(0) == 0x4757)
     setWheelCodeName(data)
-  } else {
-    // unhandled packet
+}
+
+function handleFrameData(data) {
+  switch(data.getUint8(18)) {
+    case 0: return parseFramePacket0(data)
+    case 1: return parseFramePacket1(data)
+    case 4: return parseFramePacket4(data)
   }
 }
 
