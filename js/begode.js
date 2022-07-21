@@ -2,6 +2,8 @@ const debug = new URL(window.location.href).searchParams.get('debug')
 const Decoder = new TextDecoder()
 const maxCellVolt = 4.2
 const baseCellSeries = 16
+const framePacketLength = 24
+const bluetoothPacketLength = 20
 
 function modelParams() {
   switch(wheelModel) {
@@ -103,9 +105,9 @@ async function initialize() {
   wheelCodeName = ''
   updateTiltbackSpeed = true
   logs = ''
-  frame = new Uint8Array(24)
-  previousFrame = new Uint8Array(24)
-  frameLength = 0
+  frame = new Uint8Array(framePacketLength)
+  previousFrame = new Uint8Array(framePacketLength)
+  previousFrameLength = 0
   document.getElementById('scan-disconnect').innerText = 'Disconnect'
   document.getElementById('scan-disconnect').className = 'btn-lg btn-danger'
   document.getElementById('scan-disconnect').onclick = disconnect
@@ -146,7 +148,7 @@ async function exitYmodem() {
   await sendCommand([1, 0, 255, 65, 0, 1, 0].concat(Array(13).fill(0)))
 
   for (i = 0; i < 5; i++)
-    await sendCommand(Array(20).fill(0))
+    await sendCommand(Array(bluetoothPacketLength).fill(0))
 
   await sendCommand(Array(11).fill(0).concat([19, 77]))
 }
@@ -346,7 +348,7 @@ function readMainPackets(event) {
 
   if (frameEnd != -1) {
     frame.set(previousFrame)
-    frame.set(array.slice(0, frameEnd + 4), frameLength)
+    frame.set(array.slice(0, frameEnd + 4), previousFrameLength)
     if (!debug)
       logs += frame.join(' ') + "\n"
 
@@ -354,8 +356,8 @@ function readMainPackets(event) {
   }
 
   if (frameStart != -1) {
-    frameLength = 20 - frameStart
     previousFrame.set(array.slice(frameStart))
+    previousFrameLength = bluetoothPacketLength - frameStart
   }
 }
 
