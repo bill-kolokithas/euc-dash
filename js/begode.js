@@ -77,7 +77,7 @@ async function sendCommand(cmd, param) {
   command = commands(cmd, param)
 
   if (debug)
-    logs += command.join(' ') + "\n"
+    logs += '> ' + command.join(' ') + "\n"
 
   for (let byte of command) {
     await characteristic.writeValue(new Uint8Array([byte]))
@@ -334,7 +334,7 @@ function readMainPackets(event) {
   array = new Uint8Array(data.buffer)
 
   if (debug)
-    logs += array.join(' ') + "\n"
+    logs += '< ' + array.join(' ') + "\n"
 
   frameStart = array.findIndex((el, idx, arr) => {
     return arr[idx] == 85 && arr[idx + 1] == 170
