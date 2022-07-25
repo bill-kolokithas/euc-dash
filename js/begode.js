@@ -86,10 +86,7 @@ async function sendCommand(cmd, param) {
 }
 
 async function scan() {
-  device = await navigator.bluetooth.requestDevice({ filters: [
-    { namePrefix: 'GotWay' },
-    { services: [0xFFE0] },
-  ] })
+  device = await navigator.bluetooth.requestDevice({ filters: [ { services: [0xFFE0] } ] })
   server = await device.gatt.connect()
   service = await server.getPrimaryService(0xFFE0)
   characteristic = await service.getCharacteristic(0xFFE1)
@@ -334,7 +331,7 @@ function readMainPackets(event) {
   array = new Uint8Array(data.buffer)
 
   if (debug)
-    logs += '< ' + array.join(' ') + "\n"
+    logs += array.join(' ') + "\n"
 
   frameStart = array.findIndex((el, idx, arr) => {
     return arr[idx] == 85 && arr[idx + 1] == 170
