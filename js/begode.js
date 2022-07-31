@@ -263,13 +263,14 @@ function parseFramePacket0(data) {
   temp = (data.getInt16(12) / 340 + 36.53).toFixed(2)
   setField('temp', temp)
 
-  resets = data.getInt16(14)
+  resets = data.getUint16(14)
   if (resets > 10)
     resets -= 9
   setField('resets', resets)
 
-  volume = data.getInt16(16)
-  document.getElementById(`volume-${volume}`).checked = true
+  volume = data.getUint16(16)
+  if (volume >= 1 && volume <= 9)
+    document.getElementById(`volume-${volume}`).checked = true
 }
 
 function parseFramePacket4(data) {
