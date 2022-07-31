@@ -81,7 +81,7 @@ async function sendCommand(cmd, param) {
 
   for (let byte of command) {
     await characteristic.writeValue(new Uint8Array([byte]))
-    await new Promise(r => setTimeout(r, 250))
+    await new Promise(r => setTimeout(r, 100))
   }
 }
 
