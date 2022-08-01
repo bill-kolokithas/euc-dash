@@ -77,7 +77,7 @@ async function sendCommand(cmd, param) {
   command = commands(cmd, param)
 
   if (debug)
-    logs += '> ' + command.join(' ') + "\n"
+    logs += '> ' + command + "\n"
 
   for (let byte of command) {
     await characteristic.writeValue(new Uint8Array([byte]))
@@ -127,7 +127,13 @@ function saveLogs() {
   anchor = document.getElementById('save-logs')
   file = new Blob([logs], { type: 'text/plain' })
   anchor.href = URL.createObjectURL(file)
-  anchor.download = `euc-dash-logs-${wheelModel}-${firmware}.txt`
+  filename = 'euc-dash-logs'
+  if (wheelModel)
+    filename += '-' + wheelModel
+  if (firmware)
+    filename += '-' + firmware
+
+  anchor.download = filename + '.txt'
 }
 
 async function startIAP() {
@@ -196,7 +202,7 @@ async function switchToMainPackets() {
   characteristic.removeEventListener('characteristicvaluechanged', readExtendedPackets)
   document.getElementById('extended').style.display = 'none'
   document.getElementById('main').style.display = null
-  document.getElementById('packet-switch').innerText = 'Switch to extended packets'
+  document.getElementById('packet-switch').innerText = 'Extended packets ->'
   document.getElementById('packet-switch').onclick = switchToExtendedPackets
   await sendCommand('mainPacket')
   characteristic.addEventListener('characteristicvaluechanged', readMainPackets)
@@ -206,7 +212,7 @@ async function switchToExtendedPackets() {
   characteristic.removeEventListener('characteristicvaluechanged', readMainPackets)
   document.getElementById('main').style.display = 'none'
   document.getElementById('extended').style.display = null
-  document.getElementById('packet-switch').innerText = 'Switch to main packets'
+  document.getElementById('packet-switch').innerText = '<- Main packets'
   document.getElementById('packet-switch').onclick = switchToMainPackets
   line = ''
   setupGauge()
@@ -253,7 +259,7 @@ function parseFramePacket0(data) {
   speed = Math.abs(data.getInt16(4) * 3.6 / 100).toFixed(1)
   setField('speed', speed)
 
-  tripDistance = (data.getUint32(6) / 1000).toFixed(2)
+  tripDistance = (data.getUint16(8) / 1000).toFixed(2)
   setField('trip-distance', tripDistance)
 
   phaseCurrent = data.getInt16(10) / 100
@@ -332,7 +338,7 @@ function readMainPackets(event) {
   array = new Uint8Array(data.buffer)
 
   if (debug)
-    logs += array.join(' ') + "\n"
+    logs += array + "\n"
 
   frameStart = array.findIndex((el, idx, arr) => {
     return arr[idx] == 85 && arr[idx + 1] == 170
@@ -348,7 +354,7 @@ function readMainPackets(event) {
     frame.set(previousFrame)
     frame.set(array.slice(0, frameEnd + 4), previousFrameLength)
     if (!debug)
-      logs += frame.join(' ') + "\n"
+      logs += frame + "\n"
 
     handleFrameData(new DataView(frame.buffer))
   }
