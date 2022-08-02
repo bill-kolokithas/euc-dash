@@ -346,8 +346,12 @@ function readMainPackets(event) {
     return arr[idx] == 90 && arr[idx + 1] == 90 && arr[idx + 2] == 90 && arr[idx + 3] == 90
   })
 
-  if (frameStart == -1 && frameEnd == -1)
+  if (frameStart == -1 && frameEnd == -1) {
+    if (!debug)
+      logs += array + '\n'
+
     return handleRegularData(data)
+  }
 
   if (frameEnd != -1) {
     frame.set(previousFrame)
