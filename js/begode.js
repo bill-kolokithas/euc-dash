@@ -395,15 +395,15 @@ function readExtendedPackets(event) {
     logs += new Uint8Array(event.target.value.buffer) + '\n'
 
   fragment = Decoder.decode(event.target.value)
+  lineEnd = fragment.indexOf('\n')
 
-  if (line == '')
-    line = fragment
-  else
-    line += fragment;
+  if (lineEnd == -1)
+    line += fragment
+  else {
+    line += fragment.slice(0, lineEnd);
 
-  if (fragment.endsWith('\r\n')) {
     if (!debug)
-      logs += line.replace('\r', '')
+      logs += line.replace('\r', '\n')
 
     keys = line.match(/[A-z/=]+/g)
     keys = keys.map(l => l.split('=')[0])
@@ -433,6 +433,6 @@ function readExtendedPackets(event) {
       rendered = true
     }
 
-    line = ''
+    line = fragment.slice(lineEnd + 1)
   }
 }
