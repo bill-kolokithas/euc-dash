@@ -76,8 +76,7 @@ const faultAlarms = {
 async function sendCommand(cmd, param) {
   command = commands(cmd, param)
 
-  if (debug)
-    logs += '> ' + command + "\n"
+  logs += '> ' + command + '\n'
 
   for (let byte of command) {
     await characteristic.writeValue(new Uint8Array([byte]))
@@ -338,7 +337,7 @@ function readMainPackets(event) {
   array = new Uint8Array(data.buffer)
 
   if (debug)
-    logs += array + "\n"
+    logs += array + '\n'
 
   frameStart = array.findIndex((el, idx, arr) => {
     return arr[idx] == 85 && arr[idx + 1] == 170
@@ -354,7 +353,7 @@ function readMainPackets(event) {
     frame.set(previousFrame)
     frame.set(array.slice(0, frameEnd + 4), previousFrameLength)
     if (!debug)
-      logs += frame + "\n"
+      logs += frame + '\n'
 
     handleFrameData(new DataView(frame.buffer))
   }
@@ -392,14 +391,19 @@ function appendElement(key, value) {
 }
 
 function readExtendedPackets(event) {
+  if (debug)
+    logs += new Uint8Array(event.target.value.buffer) + '\n'
+
   fragment = Decoder.decode(event.target.value)
+
   if (line == '')
     line = fragment
   else
     line += fragment;
 
   if (fragment.endsWith('\r\n')) {
-    logs += line.replace('\r', '')
+    if (!debug)
+      logs += line.replace('\r', '')
 
     keys = line.match(/[A-z/=]+/g)
     keys = keys.map(l => l.split('=')[0])
