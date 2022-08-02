@@ -258,6 +258,12 @@ function parseFramePacket0(data) {
   speed = Math.abs(data.getInt16(4) * 3.6 / 100).toFixed(1)
   setField('speed', speed)
 
+  // Master latest firmware
+  if (firmware == '2014003') {
+    remainingDistance = data.getUint16(6)
+    setField('remaining-distance', remainingDistance)
+  }
+
   tripDistance = (data.getUint16(8) / 1000).toFixed(2)
   setField('trip-distance', tripDistance)
 
