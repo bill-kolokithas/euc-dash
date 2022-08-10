@@ -100,6 +100,7 @@ async function initialize() {
   wheelModel = ''
   firmware = ''
   updateTiltbackSpeed = true
+  updatePwmLimit = true
   logs = ''
   frame = new Uint8Array(framePacketLength)
   previousFrame = new Uint8Array(framePacketLength)
@@ -188,6 +189,7 @@ function setFirmware(data) {
   // Master latest firmware
   if (firmware == '2014003') {
     showPwmLimitSetting()
+    document.getElementById('remaining-distance-field').style.display = null
   }
 }
 
@@ -234,9 +236,6 @@ function updatePwmAlarmSpeed() {
 }
 
 function updateVoltageHelpText() {
-  if (wheelModel == '')
-    return
-
   minVoltage = (modelParams()['voltMultiplier'] * modelParams()['minCellVolt'] * 16).toFixed(1)
   maxVoltage = (modelParams()['voltMultiplier'] * maxCellVolt * 16).toFixed(1)
   voltageHelp.innerText = `min: ${minVoltage}v - max: ${maxVoltage}v`
@@ -360,12 +359,15 @@ function readMainPackets(event) {
   }
 
   if (frameEnd != -1) {
+    frameLength = frameEnd + 4
     frame.set(previousFrame)
-    frame.set(array.slice(0, frameEnd + 4), previousFrameLength)
+    frame.set(array.slice(0, frameLength), previousFrameLength)
+
     if (!debug)
       logs += frame + '\n'
 
-    handleFrameData(new DataView(frame.buffer))
+    if (previousFrameLength + frameLength == framePacketLength)
+      handleFrameData(new DataView(frame.buffer))
   }
 
   if (frameStart != -1) {
