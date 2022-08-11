@@ -110,6 +110,7 @@ async function initialize() {
   document.getElementById('scan-disconnect').onclick = disconnect
   document.getElementById('packet-switch').classList.remove('invisible')
   document.getElementById('save-logs').classList.remove('invisible')
+  updateVoltageHelpText()
 
   await sendCommand('fetchModel')
 }
@@ -178,6 +179,7 @@ function setField(field, value) {
 async function setWheelModel(data) {
   wheelModel = Decoder.decode(data.buffer.slice(5)).trim()
   setField('wheel-model', wheelModel)
+  updateVoltageHelpText()
 
   await sendCommand('fetchFirmware')
 }
@@ -238,17 +240,14 @@ function updatePwmAlarmSpeed() {
 function updateVoltageHelpText() {
   minVoltage = (modelParams()['voltMultiplier'] * modelParams()['minCellVolt'] * 16).toFixed(1)
   maxVoltage = (modelParams()['voltMultiplier'] * maxCellVolt * 16).toFixed(1)
-  voltageHelp.innerText = `min: ${minVoltage}v - max: ${maxVoltage}v`
+
+  document.getElementById('voltage-help').innerText = `min: ${minVoltage}v - max: ${maxVoltage}v`
 }
 
 function parseFramePacket0(data) {
   voltage = data.getUint16(2) / 100
   scaledVoltage = (voltage * modelParams()['voltMultiplier']).toFixed(1)
   setField('voltage', scaledVoltage)
-
-  voltageHelp = document.getElementById('voltage-help')
-  if (voltageHelp.innerText == '')
-    updateVoltageHelpText()
 
   battery = (100 * (voltage / baseCellSeries - modelParams()['minCellVolt']) /
    (maxCellVolt - modelParams()['minCellVolt'])).toFixed(2)
