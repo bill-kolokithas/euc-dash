@@ -52,13 +52,6 @@
                 </div>
               </div>
               <div class="mb-2 row">
-                <label class="col-lg-5 col-form-label" for="battery">Battery percent:</label>
-                <div class="col-lg-7">
-                  <input class="form-control" id="battery" type="text" value="" disabled readonly>
-                  <small class="form-text text-muted">linear calculation</small>
-                </div>
-              </div>
-              <div class="mb-2 row">
                 <label class="col-lg-5 col-form-label" for="speed">Speed:</label>
                 <div class="col-lg-7">
                   <input class="form-control" id="speed" type="text" value="" disabled readonly>
@@ -361,9 +354,27 @@
             </div>
             <div class="card mb-2 col-lg-6">
               <div class="card-header">
-                Statistics
+                Statistics (session)
               </div>
               <div class="card-body">
+                <div class="mb-2 row">
+                  <label class="col-lg-5 col-form-label" for="battery">Current battery:</label>
+                  <div class="col-lg-7">
+                    <input class="form-control" id="battery" type="text" value="" disabled readonly>
+                  </div>
+                </div>
+                <div class="mb-2 row">
+                  <label class="col-lg-5 col-form-label" for="max-battery">Max battery:</label>
+                  <div class="col-lg-7">
+                    <input class="form-control" id="max-battery" type="text" value="" disabled readonly>
+                  </div>
+                </div>
+                <div class="mb-2 row">
+                  <label class="col-lg-5 col-form-label" for="min-battery">Min battery:</label>
+                  <div class="col-lg-7">
+                    <input class="form-control" id="min-battery" type="text" value="" disabled readonly>
+                  </div>
+                </div>
                 <div class="mb-2 row">
                   <label class="col-lg-5 col-form-label" for="max-speed">Max speed:</label>
                   <div class="col-lg-7">
@@ -377,7 +388,20 @@
                   </div>
                 </div>
                 <div class="mb-2 row">
-                  <label class="col-lg-5 col-form-label" for="max-speed-since-stop">Max speed since last stop:</label>
+                  <label class="col-lg-5 col-form-label" for="min-phase-current">Min phase current:</label>
+                  <div class="col-lg-7">
+                    <input class="form-control" id="min-phase-current" type="text" value="" disabled readonly>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card mb-2 col-lg-6">
+              <div class="card-header">
+                Statistics (since last stop)
+              </div>
+              <div class="card-body">
+                <div class="mb-2 row">
+                  <label class="col-lg-5 col-form-label" for="max-speed-since-stop">Max speed:</label>
                   <div class="col-lg-7">
                     <input class="form-control" id="max-speed-since-stop" type="text" value="" disabled readonly>
                   </div>
@@ -389,9 +413,21 @@
                   </div>
                 </div>
                 <div class="mb-2 row">
-                  <label class="col-lg-5 col-form-label" for="max-phase-current-since-stop">Max phase current since last stop:</label>
+                  <label class="col-lg-5 col-form-label" for="voltage-sag">Voltage sag percent:</label>
+                  <div class="col-lg-7">
+                    <input class="form-control" id="voltage-sag" type="text" value="" disabled readonly>
+                  </div>
+                </div>
+                <div class="mb-2 row">
+                  <label class="col-lg-5 col-form-label" for="max-phase-current-since-stop">Max phase current:</label>
                   <div class="col-lg-7">
                     <input class="form-control" id="max-phase-current-since-stop" type="text" value="" disabled readonly>
+                  </div>
+                </div>
+                <div class="mb-2 row">
+                  <label class="col-lg-5 col-form-label" for="min-phase-current-since-stop">Min phase current:</label>
+                  <div class="col-lg-7">
+                    <input class="form-control" id="min-phase-current-since-stop" type="text" value="" disabled readonly>
                   </div>
                 </div>
               </div>

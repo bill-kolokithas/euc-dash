@@ -101,6 +101,10 @@ async function initialize() {
   maxSpeedSinceStop = 0
   maxPhaseCurrent = 0
   maxPhaseCurrentSinceStop = 0
+  minPhaseCurrent = 0
+  minPhaseCurrentSinceStop = 0
+  maxBattery = 0
+  minBattery = 150
   updateStatistics = false
   rendered = false
   wheelModel = ''
@@ -243,7 +247,6 @@ function updatePwmAlarmSpeed() {
   })
 }
 
-
 function updateSpeedStatistics() {
   if (speed > maxSpeed) {
     maxSpeed = speed
@@ -253,6 +256,9 @@ function updateSpeedStatistics() {
   if (!updateStatistics && speed > resetStatisticsSpeedThreshold) {
     maxSpeedSinceStop = 0
     maxPhaseCurrentSinceStop = 0
+    minPhaseCurrentSinceStop = 0
+    batteryStart = battery
+    voltageSag = 0
     accelerationStart = new Date
     updateStatistics = true
   } else if (updateStatistics && speed <= resetStatisticsSpeedThreshold) {
@@ -274,12 +280,36 @@ function updatePhaseCurrentStatistics() {
   if (phaseCurrent > maxPhaseCurrent) {
     maxPhaseCurrent = phaseCurrent
     setField('max-phase-current', maxPhaseCurrent)
+  } else if (phaseCurrent < minPhaseCurrent) {
+    minPhaseCurrent = phaseCurrent
+    setField('min-phase-current', minPhaseCurrent)
   }
 
   if (updateStatistics) {
     if (phaseCurrent > maxPhaseCurrentSinceStop) {
       maxPhaseCurrentSinceStop = phaseCurrent
       setField('max-phase-current-since-stop', maxPhaseCurrentSinceStop.toFixed(1))
+    } else if (phaseCurrent < minPhaseCurrentSinceStop) {
+      minPhaseCurrentSinceStop = phaseCurrent
+      setField('min-phase-current-since-stop', minPhaseCurrentSinceStop.toFixed(1))
+    }
+  }
+}
+
+function updateBatteryStatistics() {
+  if (battery > maxBattery) {
+    maxBattery = battery
+    setField('max-battery', maxBattery.toFixed(1))
+  } else if (battery < minBattery && phaseCurrent > 10) {
+    minBattery = battery
+    setField('min-battery', minBattery.toFixed(1))
+  }
+
+  if (updateStatistics) {
+    batteryDiff = batteryStart - battery
+    if (batteryDiff > voltageSag) {
+      voltageSag = batteryDiff
+      setField('voltage-sag', voltageSag.toFixed(1))
     }
   }
 }
@@ -296,9 +326,10 @@ function parseFramePacket0(data) {
   scaledVoltage = (voltage * modelParams()['voltMultiplier']).toFixed(1)
   setField('voltage', scaledVoltage)
 
-  battery = (100 * (voltage / baseCellSeries - modelParams()['minCellVolt']) /
-   (maxCellVolt - modelParams()['minCellVolt'])).toFixed(2)
-  setField('battery', battery)
+  battery = 100 * (voltage / baseCellSeries - modelParams()['minCellVolt']) /
+    (maxCellVolt - modelParams()['minCellVolt'])
+  setField('battery', battery.toFixed(1))
+  updateBatteryStatistics()
 
   speed = Math.abs(data.getInt16(4) * 3.6 / 100)
   setField('speed', speed.toFixed(1))
