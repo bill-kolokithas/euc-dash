@@ -105,6 +105,7 @@ async function initialize() {
   minPhaseCurrentSinceStop = 0
   maxBattery = 0
   minBattery = 150
+  maxTemperature = 0
   updateStatistics = false
   rendered = false
   wheelModel = ''
@@ -314,6 +315,13 @@ function updateBatteryStatistics() {
   }
 }
 
+function updateTemperatureStatistics() {
+  if (temperature > maxTemperature) {
+    maxTemperature = temperature
+    setField('max-temperature', maxTemperature.toFixed(2))
+  }
+}
+
 function updateVoltageHelpText() {
   minVoltage = (modelParams()['voltMultiplier'] * modelParams()['minCellVolt'] * 16).toFixed(1)
   maxVoltage = (modelParams()['voltMultiplier'] * maxCellVolt * 16).toFixed(1)
@@ -349,8 +357,9 @@ function parseFramePacket0(data) {
   updatePhaseCurrentStatistics()
 
   // MPU6050 format
-  temp = (data.getInt16(12) / 340 + 36.53).toFixed(2)
-  setField('temp', temp)
+  temperature = data.getInt16(12) / 340 + 36.53
+  setField('temperature', temperature.toFixed(2))
+  updateTemperatureStatistics()
 
   resets = data.getUint16(14)
   if (resets > 10)
@@ -404,9 +413,8 @@ function parseFramePacket4(data) {
   if (faultAlarm & 0x1 && (pwmAlarmSpeed == 0 || speed < pwmAlarmSpeed))
     updatePwmAlarmSpeed()
 
-  lightMode = data.getUint8(15)
-  if (lightMode >= 0 && lightMode <= 2)
-    document.getElementById(`light-mode-${lightMode}`).checked = true
+  lightMode = data.getUint8(15) % 3
+  document.getElementById(`light-mode-${lightMode}`).checked = true
 }
 
 function parseFramePacket1(data) {
