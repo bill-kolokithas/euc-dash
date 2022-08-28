@@ -1,10 +1,10 @@
-const debug = new URL(window.location.href).searchParams.get('debug')
+const Debug = new URL(window.location.href).searchParams.get('debug')
 const Decoder = new TextDecoder()
-const maxCellVolt = 4.2
-const baseCellSeries = 16
-const framePacketLength = 24
-const bluetoothPacketLength = 20
-const resetStatisticsSpeedThreshold = 3
+const MaxCellVolt = 4.2
+const BaseCellSeries = 16
+const FramePacketLength = 24
+const BluetoothPacketLength = 20
+const ResetStatisticsSpeedThreshold = 3
 
 function modelParams() {
   switch(wheelModel) {
@@ -107,14 +107,15 @@ async function initialize() {
   minBattery = 150
   maxTemperature = 0
   updateStatistics = false
+  polarity = 1
   rendered = false
   wheelModel = ''
   firmware = ''
   updateTiltbackSpeed = true
   updatePwmLimit = true
   logs = ''
-  frame = new Uint8Array(framePacketLength)
-  previousFrame = new Uint8Array(framePacketLength)
+  frame = new Uint8Array(FramePacketLength)
+  previousFrame = new Uint8Array(FramePacketLength)
   previousFrameLength = 0
   document.getElementById('scan-disconnect').innerText = 'Disconnect'
   document.getElementById('scan-disconnect').className = 'btn-lg btn-danger'
@@ -163,7 +164,7 @@ async function exitYmodem() {
   await sendCommand([1, 0, 255, 65, 0, 1, 0].concat(Array(13).fill(0)))
 
   for (i = 0; i < 5; i++)
-    await sendCommand(Array(bluetoothPacketLength).fill(0))
+    await sendCommand(Array(BluetoothPacketLength).fill(0))
 
   await sendCommand(Array(11).fill(0).concat([19, 77]))
 }
@@ -234,6 +235,18 @@ async function switchToExtendedPackets() {
   characteristic.addEventListener('characteristicvaluechanged', readExtendedPackets)
 }
 
+function reversePolarity() {
+  if (polarity == 1) {
+    document.getElementById('reverse-polarity').className = 'btn btn-sm btn-outline-danger'
+    document.getElementById('reverse-polarity').innerText = 'Negative'
+  } else {
+    document.getElementById('reverse-polarity').className = 'btn btn-sm btn-outline-success'
+    document.getElementById('reverse-polarity').innerText = 'Positive'
+  }
+
+  polarity = -polarity
+}
+
 function updatePwmAlarmSpeed() {
   pwmAlarmSpeed = speed
   setField('pwm-alarm-speed', pwmAlarmSpeed.toFixed(1))
@@ -254,7 +267,7 @@ function updateSpeedStatistics() {
     setField('max-speed', maxSpeed.toFixed(1))
   }
 
-  if (!updateStatistics && speed > resetStatisticsSpeedThreshold) {
+  if (!updateStatistics && speed > ResetStatisticsSpeedThreshold) {
     maxSpeedSinceStop = 0
     maxPhaseCurrentSinceStop = 0
     minPhaseCurrentSinceStop = 0
@@ -262,7 +275,7 @@ function updateSpeedStatistics() {
     voltageSag = 0
     accelerationStart = new Date
     updateStatistics = true
-  } else if (updateStatistics && speed <= resetStatisticsSpeedThreshold) {
+  } else if (updateStatistics && speed <= ResetStatisticsSpeedThreshold) {
     updateStatistics = false
   }
 
@@ -324,7 +337,7 @@ function updateTemperatureStatistics() {
 
 function updateVoltageHelpText() {
   minVoltage = (modelParams()['voltMultiplier'] * modelParams()['minCellVolt'] * 16).toFixed(1)
-  maxVoltage = (modelParams()['voltMultiplier'] * maxCellVolt * 16).toFixed(1)
+  maxVoltage = (modelParams()['voltMultiplier'] * MaxCellVolt * 16).toFixed(1)
 
   document.getElementById('voltage-help').innerText = `min: ${minVoltage}v - max: ${maxVoltage}v`
 }
@@ -334,8 +347,8 @@ function parseFramePacket0(data) {
   scaledVoltage = (voltage * modelParams()['voltMultiplier']).toFixed(1)
   setField('voltage', scaledVoltage)
 
-  battery = 100 * (voltage / baseCellSeries - modelParams()['minCellVolt']) /
-    (maxCellVolt - modelParams()['minCellVolt'])
+  battery = 100 * (voltage / BaseCellSeries - modelParams()['minCellVolt']) /
+    (MaxCellVolt - modelParams()['minCellVolt'])
   setField('battery', battery.toFixed(1))
   updateBatteryStatistics()
 
@@ -352,7 +365,7 @@ function parseFramePacket0(data) {
   tripDistance = (data.getUint16(8) / 1000).toFixed(2)
   setField('trip-distance', tripDistance)
 
-  phaseCurrent = data.getInt16(10) / 100
+  phaseCurrent = data.getInt16(10) / 100 * polarity
   setField('phase-current', phaseCurrent)
   updatePhaseCurrentStatistics()
 
@@ -429,7 +442,7 @@ function readMainPackets(event) {
   data = event.target.value
   array = new Uint8Array(data.buffer)
 
-  if (debug)
+  if (Debug)
     logs += array + '\n'
 
   frameStart = array.findIndex((el, idx, arr) => {
@@ -440,7 +453,7 @@ function readMainPackets(event) {
   })
 
   if (frameStart == -1 && frameEnd == -1) {
-    if (!debug)
+    if (!Debug)
       logs += array + '\n'
 
     return handleRegularData(data)
@@ -451,16 +464,16 @@ function readMainPackets(event) {
     frame.set(previousFrame)
     frame.set(array.slice(0, frameLength), previousFrameLength)
 
-    if (!debug)
+    if (!Debug)
       logs += frame + '\n'
 
-    if (previousFrameLength + frameLength == framePacketLength)
+    if (previousFrameLength + frameLength == FramePacketLength)
       handleFrameData(new DataView(frame.buffer))
   }
 
   if (frameStart != -1) {
     previousFrame.set(array.slice(frameStart))
-    previousFrameLength = bluetoothPacketLength - frameStart
+    previousFrameLength = BluetoothPacketLength - frameStart
   }
 }
 
@@ -491,7 +504,7 @@ function appendElement(key, value) {
 }
 
 function readExtendedPackets(event) {
-  if (debug)
+  if (Debug)
     logs += new Uint8Array(event.target.value.buffer) + '\n'
 
   fragment = Decoder.decode(event.target.value)
@@ -502,7 +515,7 @@ function readExtendedPackets(event) {
   else {
     line += fragment.slice(0, lineEnd);
 
-    if (!debug)
+    if (!Debug)
       logs += line.replace('\r', '\n')
 
     keys = line.match(/[A-z/=]+/g)
