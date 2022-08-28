@@ -52,6 +52,13 @@
                 </div>
               </div>
               <div class="mb-2 row">
+                <label class="col-lg-5 col-form-label" for="battery">Battery percent:</label>
+                <div class="col-lg-7">
+                  <input class="form-control" id="battery" type="text" value="" disabled readonly>
+                  <small class="form-text text-muted">linear calculation</small>
+                </div>
+              </div>
+              <div class="mb-2 row">
                 <label class="col-lg-5 col-form-label" for="speed">Speed:</label>
                 <div class="col-lg-7">
                   <input class="form-control" id="speed" type="text" value="" disabled readonly>
@@ -314,77 +321,59 @@
               </div>
               <div class="card-body">
                 <div class="mb-2 row">
-                  <label class="col-lg-5 col-form-label" for="battery">Current battery percent:</label>
-                  <div class="col-lg-7">
-                    <input class="form-control" id="battery" type="text" value="" disabled readonly>
-                    <small class="form-text text-muted">linear calculation</small>
-                  </div>
-                </div>
-                <div class="mb-2 row">
-                  <label class="col-lg-5 col-form-label" for="pwm-alarm-speed">Alarm at current battery:</label>
+                  <label class="col-lg-5 col-form-label" for="pwm-alarm-speed">Alarm speed at current battery:</label>
                   <div class="col-lg-7">
                     <input class="form-control" id="pwm-alarm-speed" type="text" value="" disabled readonly>
                     <small class="form-text text-muted">perform a free spin to detect speed</small>
                   </div>
                 </div>
                 <div class="mb-2 row">
-                  <label class="col-lg-5 col-form-label" for="pwm-alarm-10">Alarm at 10% battery:</label>
+                  <label class="col-lg-5 col-form-label" for="pwm-alarm-10">Alarm speed at 10% battery:</label>
                   <div class="col-lg-7">
                     <input class="form-control" id="pwm-alarm-10" type="text" value="" disabled readonly>
                   </div>
                 </div>
                 <div class="mb-2 row">
-                  <label class="col-lg-5 col-form-label" for="pwm-alarm-20">Alarm at 20% battery:</label>
-                  <div class="col-lg-7">
-                    <input class="form-control" id="pwm-alarm-20" type="text" value="" disabled readonly>
-                  </div>
-                </div>
-                <div class="mb-2 row">
-                  <label class="col-lg-5 col-form-label" for="pwm-alarm-30">Alarm at 30% battery:</label>
+                  <label class="col-lg-5 col-form-label" for="pwm-alarm-30">Alarm speed at 30% battery:</label>
                   <div class="col-lg-7">
                     <input class="form-control" id="pwm-alarm-30" type="text" value="" disabled readonly>
                   </div>
                 </div>
                 <div class="mb-2 row">
-                  <label class="col-lg-5 col-form-label" for="pwm-alarm-40">Alarm at 40% battery:</label>
-                  <div class="col-lg-7">
-                    <input class="form-control" id="pwm-alarm-40" type="text" value="" disabled readonly>
-                  </div>
-                </div>
-                <div class="mb-2 row">
-                  <label class="col-lg-5 col-form-label" for="pwm-alarm-50">Alarm at 50% battery:</label>
+                  <label class="col-lg-5 col-form-label" for="pwm-alarm-50">Alarm speed at 50% battery:</label>
                   <div class="col-lg-7">
                     <input class="form-control" id="pwm-alarm-50" type="text" value="" disabled readonly>
                   </div>
                 </div>
                 <div class="mb-2 row">
-                  <label class="col-lg-5 col-form-label" for="pwm-alarm-60">Alarm at 60% battery:</label>
-                  <div class="col-lg-7">
-                    <input class="form-control" id="pwm-alarm-60" type="text" value="" disabled readonly>
-                  </div>
-                </div>
-                <div class="mb-2 row">
-                  <label class="col-lg-5 col-form-label" for="pwm-alarm-70">Alarm at 70% battery:</label>
-                  <div class="col-lg-7">
-                    <input class="form-control" id="pwm-alarm-70" type="text" value="" disabled readonly>
-                  </div>
-                </div>
-                <div class="mb-2 row">
-                  <label class="col-lg-5 col-form-label" for="pwm-alarm-80">Alarm at 80% battery:</label>
+                  <label class="col-lg-5 col-form-label" for="pwm-alarm-80">Alarm speed at 80% battery:</label>
                   <div class="col-lg-7">
                     <input class="form-control" id="pwm-alarm-80" type="text" value="" disabled readonly>
                   </div>
                 </div>
                 <div class="mb-2 row">
-                  <label class="col-lg-5 col-form-label" for="pwm-alarm-90">Alarm at 90% battery:</label>
+                  <label class="col-lg-5 col-form-label" for="pwm-alarm-100">Alarm speed at 100% battery:</label>
                   <div class="col-lg-7">
-                    <input class="form-control" id="pwm-alarm-90" type="text" value="" disabled readonly>
+                    <input class="form-control" id="pwm-alarm-100" type="text" value="" disabled readonly>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card mb-2 col-lg-6">
+              <div class="card-header">
+                Statistics
+              </div>
+              <div class="card-body">
+                <div class="mb-2 row">
+                  <label class="col-lg-5 col-form-label" for="max-speed">Max speed:</label>
+                  <div class="col-lg-7">
+                    <input class="form-control" id="max-speed" type="text" value="" disabled readonly>
                   </div>
                 </div>
                 <div class="mb-2 row">
-                  <label class="col-lg-5 col-form-label" for="pwm-alarm-100">Alarm at 100% battery:</label>
+                  <label class="col-lg-5 col-form-label" for="max-phase-current">Max phase current:</label>
                   <div class="col-lg-7">
-                    <input class="form-control" id="pwm-alarm-100" type="text" value="" disabled readonly>
+                    <input class="form-control" id="max-phase-current" type="text" value="" disabled readonly>
                   </div>
                 </div>
               </div>

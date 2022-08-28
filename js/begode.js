@@ -96,6 +96,8 @@ async function scan() {
 
 async function initialize() {
   pwmAlarmSpeed = 0
+  maxSpeed = 0
+  maxPhaseCurrent = 0
   rendered = false
   wheelModel = ''
   firmware = ''
@@ -225,13 +227,13 @@ async function switchToExtendedPackets() {
 
 function updatePwmAlarmSpeed() {
   pwmAlarmSpeed = speed
-  setField('pwm-alarm-speed', pwmAlarmSpeed)
+  setField('pwm-alarm-speed', pwmAlarmSpeed.toFixed(1))
 
   speedReduction = 1 - (100 - battery) / 450
   alarmSpeed100 = (speed / speedReduction).toFixed(1)
   setField('pwm-alarm-100', alarmSpeed100)
 
-  alarmSpeeds = [10, 20, 30, 40, 50, 60, 70, 80, 90].forEach(batt => {
+  alarmSpeeds = [10, 30, 50, 80].forEach(batt => {
     speedReduction = 1 - (100 - batt) / 450
     setField(`pwm-alarm-${batt}`, (alarmSpeed100 * speedReduction).toFixed(1))
   })
@@ -253,8 +255,13 @@ function parseFramePacket0(data) {
    (maxCellVolt - modelParams()['minCellVolt'])).toFixed(2)
   setField('battery', battery)
 
-  speed = Math.abs(data.getInt16(4) * 3.6 / 100).toFixed(1)
-  setField('speed', speed)
+  speed = Math.abs(data.getInt16(4) * 3.6 / 100)
+  setField('speed', speed.toFixed(1))
+
+  if (speed > maxSpeed) {
+    maxSpeed = speed
+    setField('max-speed', maxSpeed.toFixed(1))
+  }
 
   // Master latest firmware
   if (firmware == '2014003') {
@@ -267,6 +274,11 @@ function parseFramePacket0(data) {
 
   phaseCurrent = data.getInt16(10) / 100
   setField('phase-current', phaseCurrent)
+
+  if (phaseCurrent > maxPhaseCurrent) {
+    maxPhaseCurrent = phaseCurrent
+    setField('max-phase-current', maxPhaseCurrent)
+  }
 
   // MPU6050 format
   temp = (data.getInt16(12) / 340 + 36.53).toFixed(2)
@@ -311,7 +323,7 @@ function parseFramePacket4(data) {
   ledMode = data.getUint16(12)
   document.getElementById(`led-mode-${ledMode}`).checked = true
 
-  faultAlarm = data.getUint8(12)
+  faultAlarm = data.getUint8(14)
   faultAlarmLine = ''
   for (let bit = 0; bit < 8; bit++) {
     if (faultAlarm >> bit & 0x1)
@@ -325,7 +337,8 @@ function parseFramePacket4(data) {
     updatePwmAlarmSpeed()
 
   lightMode = data.getUint8(15)
-  document.getElementById(`light-mode-${lightMode}`).checked = true
+  if (lightMode >= 0 && lightMode <= 2)
+    document.getElementById(`light-mode-${lightMode}`).checked = true
 }
 
 function parseFramePacket1(data) {
