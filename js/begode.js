@@ -4,6 +4,7 @@ const maxCellVolt = 4.2
 const baseCellSeries = 16
 const framePacketLength = 24
 const bluetoothPacketLength = 20
+const resetStatisticsSpeedThreshold = 3
 
 function modelParams() {
   switch(wheelModel) {
@@ -97,7 +98,10 @@ async function scan() {
 async function initialize() {
   pwmAlarmSpeed = 0
   maxSpeed = 0
+  maxSpeedSinceStop = 0
   maxPhaseCurrent = 0
+  maxPhaseCurrentSinceStop = 0
+  updateStatistics = false
   rendered = false
   wheelModel = ''
   firmware = ''
@@ -239,6 +243,47 @@ function updatePwmAlarmSpeed() {
   })
 }
 
+
+function updateSpeedStatistics() {
+  if (speed > maxSpeed) {
+    maxSpeed = speed
+    setField('max-speed', maxSpeed.toFixed(1))
+  }
+
+  if (!updateStatistics && speed > resetStatisticsSpeedThreshold) {
+    maxSpeedSinceStop = 0
+    maxPhaseCurrentSinceStop = 0
+    accelerationStart = new Date
+    updateStatistics = true
+  } else if (updateStatistics && speed <= resetStatisticsSpeedThreshold) {
+    updateStatistics = false
+  }
+
+  if (updateStatistics) {
+    if (speed > maxSpeedSinceStop) {
+      maxSpeedSinceStop = speed
+      accelerationStop = new Date
+      accelerationTime = (accelerationStop - accelerationStart) / 1000
+      setField('max-speed-since-stop', maxSpeedSinceStop.toFixed(1))
+      setField('acceleration-time', accelerationTime.toFixed(1))
+    }
+  }
+}
+
+function updatePhaseCurrentStatistics() {
+  if (phaseCurrent > maxPhaseCurrent) {
+    maxPhaseCurrent = phaseCurrent
+    setField('max-phase-current', maxPhaseCurrent)
+  }
+
+  if (updateStatistics) {
+    if (phaseCurrent > maxPhaseCurrentSinceStop) {
+      maxPhaseCurrentSinceStop = phaseCurrent
+      setField('max-phase-current-since-stop', maxPhaseCurrentSinceStop.toFixed(1))
+    }
+  }
+}
+
 function updateVoltageHelpText() {
   minVoltage = (modelParams()['voltMultiplier'] * modelParams()['minCellVolt'] * 16).toFixed(1)
   maxVoltage = (modelParams()['voltMultiplier'] * maxCellVolt * 16).toFixed(1)
@@ -257,11 +302,7 @@ function parseFramePacket0(data) {
 
   speed = Math.abs(data.getInt16(4) * 3.6 / 100)
   setField('speed', speed.toFixed(1))
-
-  if (speed > maxSpeed) {
-    maxSpeed = speed
-    setField('max-speed', maxSpeed.toFixed(1))
-  }
+  updateSpeedStatistics()
 
   // Master latest firmware
   if (firmware == '2014003') {
@@ -274,11 +315,7 @@ function parseFramePacket0(data) {
 
   phaseCurrent = data.getInt16(10) / 100
   setField('phase-current', phaseCurrent)
-
-  if (phaseCurrent > maxPhaseCurrent) {
-    maxPhaseCurrent = phaseCurrent
-    setField('max-phase-current', maxPhaseCurrent)
-  }
+  updatePhaseCurrentStatistics()
 
   // MPU6050 format
   temp = (data.getInt16(12) / 340 + 36.53).toFixed(2)
