@@ -527,7 +527,8 @@ function readExtendedPackets(event) {
       pwmIndex = keys.indexOf('pwmmmm')
 
     if (pwmIndex != -1) {
-      pwm = Math.abs(values[pwmIndex] / 100).toFixed(1)
+      divisor = wheelModel.startsWith('EXN') ? 10 : 100
+      pwm = Math.abs(values[pwmIndex] / divisor).toFixed(1)
       gauge.set(pwm)
     }
 
