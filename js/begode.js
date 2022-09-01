@@ -21,6 +21,7 @@ function modelParams() {
     case 'Monster':     return { 'voltMultiplier': 1.50, 'minCellVolt': 3.25 }
     case 'HERO':        return { 'voltMultiplier': 1.50, 'minCellVolt': 3.1 }
     case 'Nikola':      return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
+    case 'T4':          return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
     case 'EXN C30':     return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
     case 'EXN C38':     return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
     case 'EX20S C30':   return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
@@ -28,7 +29,6 @@ function modelParams() {
     case 'Monster Pro': return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
     case 'Master Pro':  return { 'voltMultiplier': 2,    'minCellVolt': 3.1 }
     case 'Master':      return { 'voltMultiplier': 2,    'minCellVolt': 3.05 }
-    case 'T4':          return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
     default:            return { 'voltMultiplier': 1,    'minCellVolt': 3.3 }
   }
 }
@@ -526,11 +526,14 @@ function readExtendedPackets(event) {
     values = line.match(/-?\d+/g)
 
     pwmIndex = keys.indexOf('PWM')
-    if (pwmIndex == -1)
+    divisor = 100
+    if (pwmIndex == -1) {
       pwmIndex = keys.indexOf('pwmmmm')
+      if (wheelModel.startsWith('EXN'))
+        divisor = 10
+    }
 
     if (pwmIndex != -1) {
-      divisor = wheelModel.startsWith('EXN') ? 10 : 100
       pwm = Math.abs(values[pwmIndex] / divisor).toFixed(1)
       gauge.set(pwm)
     }
