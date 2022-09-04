@@ -58,10 +58,10 @@ function commands(cmd, param) {
     case 'calibrate':       return [99, 121]
     case 'startIAP':        return [33, 64]
     case 'tiltbackOff':     return [34]
-    case 'tiltbackSpeed':   return [87, 89, param / 10 + 48, param % 10 + 48]
-    case 'pwmLimit':        return [87, 80, param / 10 + 48, param % 10 + 48]
     case 'volume':          return [87, 66, 48 + param]
     case 'ledMode':         return [87, 77, 48 + param]
+    case 'tiltbackSpeed':   return [87, 89, param.charCodeAt(0), param.charCodeAt(1)]
+    case 'pwmLimit':        return [87, 80, param.charCodeAt(0), param.charCodeAt(1)]
     default:                return cmd
   }
 }
@@ -174,7 +174,7 @@ async function exitYmodem() {
 
 async function setTiltbackSpeed(speed) {
   updateTiltbackSpeed = true
-  speed = parseInt(speed)
+  speed = speed.padStart(2, '0')
 
   if (speed == 0 || speed == 100)
     await sendCommand('tiltbackOff')
@@ -184,7 +184,7 @@ async function setTiltbackSpeed(speed) {
 
 async function setPwmLimit(pwmLimit) {
   updatePwmLimit = true
-  pwmLimit = parseInt(pwmLimit)
+  pwmLimit = pwmLimit.padStart(2, '0')
   await sendCommand('pwmLimit', pwmLimit)
 }
 function setField(field, value) {
