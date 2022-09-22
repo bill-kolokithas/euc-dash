@@ -29,6 +29,7 @@ function modelParams() {
     case 'Monster Pro': return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
     case 'Master Pro':  return { 'voltMultiplier': 2,    'minCellVolt': 3.1 }
     case 'Master':      return { 'voltMultiplier': 2,    'minCellVolt': 3.05 }
+    case 'Master C38':  return { 'voltMultiplier': 2,    'minCellVolt': 3.05 }
     default:            return { 'voltMultiplier': 1,    'minCellVolt': 3.3 }
   }
 }
@@ -203,8 +204,7 @@ function setFirmware(data) {
   firmware = Decoder.decode(data.buffer.slice(2))
   setField('firmware', firmware)
 
-  // Master latest firmware
-  if (firmware == '2014003') {
+  if (wheelModel.startsWith('Master')) {
     showPwmLimitSetting()
     document.getElementById('remaining-distance-field').style.display = null
   }
@@ -359,8 +359,7 @@ function parseFramePacket0(data) {
   setField('speed', speed.toFixed(1))
   updateSpeedStatistics()
 
-  // Master latest firmware
-  if (firmware == '2014003') {
+  if (wheelModel.startsWith('Master')) {
     remainingDistance = data.getUint16(6)
     setField('remaining-distance', remainingDistance)
   }
