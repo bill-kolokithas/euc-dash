@@ -100,6 +100,7 @@ async function scan() {
 }
 
 async function initialize() {
+  speedUnitMode = 0
   pwmAlarmSpeed = 0
   maxSpeed = 0
   maxSpeedSinceStop = 0
@@ -110,6 +111,7 @@ async function initialize() {
   maxBattery = 0
   minBattery = 150
   maxTemperature = 0
+  brakingDistance = 0
   updateStatistics = false
   polarity = 1
   rendered = false
@@ -252,22 +254,22 @@ function reversePolarity() {
 
 function updatePwmAlarmSpeed() {
   pwmAlarmSpeed = speed
-  setField('pwm-alarm-speed', pwmAlarmSpeed.toFixed(1))
+  setField('pwm-alarm-speed', pwmAlarmSpeed.toFixed(1) + (speedUnitMode == 0 ? ' km/h' : ' mi/h'))
 
   speedReduction = 1 - (100 - battery) / 450
   alarmSpeed100 = (speed / speedReduction).toFixed(1)
-  setField('pwm-alarm-100', alarmSpeed100)
+  setField('pwm-alarm-100', alarmSpeed100 + (speedUnitMode == 0 ? ' km/h' : ' mi/h'))
 
   alarmSpeeds = [10, 30, 50, 80].forEach(batt => {
     speedReduction = 1 - (100 - batt) / 450
-    setField(`pwm-alarm-${batt}`, (alarmSpeed100 * speedReduction).toFixed(1))
+    setField(`pwm-alarm-${batt}`, (alarmSpeed100 * speedReduction).toFixed(1) + (speedUnitMode == 0 ? ' km/h' : ' mi/h'))
   })
 }
 
 function updateSpeedStatistics() {
   if (speed > maxSpeed) {
     maxSpeed = speed
-    setField('max-speed', maxSpeed.toFixed(1))
+    setField('max-speed', maxSpeed.toFixed(1) + (speedUnitMode == 0 ? ' km/h' : ' mi/h'))
   }
 
   if (!updateStatistics && speed > ResetStatisticsSpeedThreshold) {
@@ -276,6 +278,7 @@ function updateSpeedStatistics() {
     minPhaseCurrentSinceStop = 0
     batteryStart = battery
     voltageSag = 0
+    brakingDistance = 0
     accelerationStart = new Date
     updateStatistics = true
   } else if (updateStatistics && speed <= ResetStatisticsSpeedThreshold) {
@@ -287,8 +290,8 @@ function updateSpeedStatistics() {
       maxSpeedSinceStop = speed
       accelerationStop = new Date
       accelerationTime = (accelerationStop - accelerationStart) / 1000
-      setField('max-speed-since-stop', maxSpeedSinceStop.toFixed(1))
-      setField('acceleration-time', accelerationTime.toFixed(1))
+      setField('max-speed-since-stop', maxSpeedSinceStop.toFixed(1) + (speedUnitMode == 0 ? ' km/h' : ' mi/h'))
+      setField('acceleration-time', accelerationTime.toFixed(1) + ' s')
     }
   }
 }
@@ -296,19 +299,19 @@ function updateSpeedStatistics() {
 function updatePhaseCurrentStatistics() {
   if (phaseCurrent > maxPhaseCurrent) {
     maxPhaseCurrent = phaseCurrent
-    setField('max-phase-current', maxPhaseCurrent)
+    setField('max-phase-current', maxPhaseCurrent + ' A')
   } else if (phaseCurrent < minPhaseCurrent) {
     minPhaseCurrent = phaseCurrent
-    setField('min-phase-current', minPhaseCurrent)
+    setField('min-phase-current', minPhaseCurrent + ' A')
   }
 
   if (updateStatistics) {
     if (phaseCurrent > maxPhaseCurrentSinceStop) {
       maxPhaseCurrentSinceStop = phaseCurrent
-      setField('max-phase-current-since-stop', maxPhaseCurrentSinceStop.toFixed(1))
+      setField('max-phase-current-since-stop', maxPhaseCurrentSinceStop.toFixed(1) + ' A')
     } else if (phaseCurrent < minPhaseCurrentSinceStop) {
       minPhaseCurrentSinceStop = phaseCurrent
-      setField('min-phase-current-since-stop', minPhaseCurrentSinceStop.toFixed(1))
+      setField('min-phase-current-since-stop', minPhaseCurrentSinceStop.toFixed(1) + ' A')
     }
   }
 }
@@ -316,17 +319,17 @@ function updatePhaseCurrentStatistics() {
 function updateBatteryStatistics() {
   if (battery > maxBattery) {
     maxBattery = battery
-    setField('max-battery', maxBattery.toFixed(1))
+    setField('max-battery', maxBattery.toFixed(1) + '%')
   } else if (battery < minBattery && phaseCurrent > 10) {
     minBattery = battery
-    setField('min-battery', minBattery.toFixed(1))
+    setField('min-battery', minBattery.toFixed(1) + '%')
   }
 
   if (updateStatistics) {
     batteryDiff = batteryStart - battery
     if (batteryDiff > voltageSag) {
       voltageSag = batteryDiff
-      setField('voltage-sag', voltageSag.toFixed(1))
+      setField('voltage-sag', voltageSag.toFixed(1) + '%')
     }
   }
 }
@@ -334,7 +337,7 @@ function updateBatteryStatistics() {
 function updateTemperatureStatistics() {
   if (temperature > maxTemperature) {
     maxTemperature = temperature
-    setField('max-temperature', maxTemperature.toFixed(2))
+    setField('max-temperature', maxTemperature.toFixed(2) + ' °C')
   }
 }
 
@@ -342,38 +345,38 @@ function updateVoltageHelpText() {
   minVoltage = (modelParams()['voltMultiplier'] * modelParams()['minCellVolt'] * 16).toFixed(1)
   maxVoltage = (modelParams()['voltMultiplier'] * MaxCellVolt * 16).toFixed(1)
 
-  document.getElementById('voltage-help').innerText = `min: ${minVoltage}v - max: ${maxVoltage}v`
+  document.getElementById('voltage-help').innerText = `min: ${minVoltage} V  max: ${maxVoltage} V`
 }
 
 function parseFramePacket0(data) {
   voltage = data.getUint16(2) / 100
   scaledVoltage = (voltage * modelParams()['voltMultiplier']).toFixed(1)
-  setField('voltage', scaledVoltage)
+  setField('voltage', scaledVoltage + ' V')
 
   battery = 100 * (voltage / BaseCellSeries - modelParams()['minCellVolt']) /
     (MaxCellVolt - modelParams()['minCellVolt'])
-  setField('battery', battery.toFixed(1))
+  setField('battery', battery.toFixed(1) + '%')
   updateBatteryStatistics()
 
   speed = Math.abs(data.getInt16(4) * 3.6 / 100)
-  setField('speed', speed.toFixed(1))
+  setField('speed', speed.toFixed(1) + (speedUnitMode == 0 ? ' km/h' : ' mi/h'))
   updateSpeedStatistics()
 
   if (wheelModel.startsWith('Master')) {
     remainingDistance = data.getUint16(6)
-    setField('remaining-distance', remainingDistance)
+    setField('remaining-distance', remainingDistance + (speedUnitMode == 0 ? ' km' : ' mi'))
   }
 
   tripDistance = (data.getUint16(8) / 1000).toFixed(2)
-  setField('trip-distance', tripDistance)
+  setField('trip-distance', tripDistance + (speedUnitMode == 0 ? ' km' : ' mi'))
 
   phaseCurrent = data.getInt16(10) / 100 * polarity
-  setField('phase-current', phaseCurrent)
+  setField('phase-current', phaseCurrent + ' A')
   updatePhaseCurrentStatistics()
 
   // MPU6050 format
   temperature = data.getInt16(12) / 340 + 36.53
-  setField('temperature', temperature.toFixed(2))
+  setField('temperature', temperature.toFixed(2) + ' °C')
   updateTemperatureStatistics()
 
   resets = data.getUint16(14)
@@ -388,7 +391,7 @@ function parseFramePacket0(data) {
 
 function parseFramePacket4(data) {
   totalDistance = (data.getUint32(2) / 1000).toFixed(2)
-  setField('total-distance', totalDistance)
+  setField('total-distance', totalDistance + (speedUnitMode == 0 ? ' km' : ' mi'))
 
   modes = data.getUint16(6)
   pedalMode      = modes >> 13 & 0x3
@@ -536,6 +539,10 @@ function readExtendedPackets(event) {
       pwm = Math.abs(values[pwmIndex] / divisor).toFixed(1)
       gauge.set(pwm)
     }
+
+    speedIndex = keys.indexOf('M/s')
+    if (speedIndex != -1)
+      values[speedIndex] = (values[speedIndex] * 3.6 / 1000).toFixed(1)
 
     tempIndex = keys.indexOf('Tem')
     if (tempIndex != -1)
