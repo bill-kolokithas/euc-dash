@@ -111,6 +111,7 @@ async function initialize() {
   maxBattery = 0
   minBattery = 150
   maxTemperature = 0
+  startingDistance = 0
   brakingDistance = 0
   updateStatistics = false
   polarity = 1
@@ -278,10 +279,13 @@ function updateSpeedStatistics() {
     minPhaseCurrentSinceStop = 0
     batteryStart = battery
     voltageSag = 0
+    startingDistance = 0
     brakingDistance = 0
     accelerationStart = new Date
     updateStatistics = true
   } else if (updateStatistics && speed <= ResetStatisticsSpeedThreshold) {
+    brakingDistance = tripDistance - startingDistance
+    setField('braking-distance', brakingDistance + ' meters')
     updateStatistics = false
   }
 
@@ -306,6 +310,9 @@ function updatePhaseCurrentStatistics() {
   }
 
   if (updateStatistics) {
+    if (startingDistance == 0 && phaseCurrent < -5)
+      startingDistance = tripDistance
+
     if (phaseCurrent > maxPhaseCurrentSinceStop) {
       maxPhaseCurrentSinceStop = phaseCurrent
       setField('max-phase-current-since-stop', maxPhaseCurrentSinceStop.toFixed(1) + ' A')
@@ -367,8 +374,8 @@ function parseFramePacket0(data) {
     setField('remaining-distance', remainingDistance + (speedUnitMode == 0 ? ' km' : ' mi'))
   }
 
-  tripDistance = (data.getUint16(8) / 1000).toFixed(2)
-  setField('trip-distance', tripDistance + (speedUnitMode == 0 ? ' km' : ' mi'))
+  tripDistance = data.getUint16(8)
+  setField('trip-distance', (tripDistance / 1000).toFixed(2) + (speedUnitMode == 0 ? ' km' : ' mi'))
 
   phaseCurrent = data.getInt16(10) / 100 * polarity
   setField('phase-current', phaseCurrent + ' A')

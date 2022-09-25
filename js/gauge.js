@@ -12,13 +12,13 @@ async function setupGauge() {
     generateGradient: true,
     highDpiSupport: true,     // High resolution support
     staticZones: [
-      {strokeStyle: "#a9d70b", min: 0, max: 75},
-      {strokeStyle: "#f9c802", min: 75, max: 80},
+      {strokeStyle: "#a9d70b", min: 0, max: 70},
+      {strokeStyle: "#f9c802", min: 70, max: 80},
       {strokeStyle: "#ff0000", min: 80, max: 100}
     ],
     staticLabels: {
       font: "10px sans-serif",
-      labels: [0, 75, 80, 100],  // Print labels at these values
+      labels: [0, 70, 80, 100],  // Print labels at these values
       color: "#000000",  // Optional: Label text color
       fractionDigits: 0  // Optional: Numerical precision. 0=round off.
     },
