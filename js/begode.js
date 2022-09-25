@@ -113,6 +113,7 @@ async function initialize() {
   maxTemperature = 0
   startingDistance = 0
   brakingDistance = 0
+  brakingSpeed = 0
   updateStatistics = false
   polarity = 1
   rendered = false
@@ -281,19 +282,23 @@ function updateSpeedStatistics() {
     voltageSag = 0
     startingDistance = 0
     brakingDistance = 0
-    accelerationStart = new Date
+    brakingSpeed = 0
+    accelerationStartTime = new Date
     updateStatistics = true
   } else if (updateStatistics && speed <= ResetStatisticsSpeedThreshold) {
+    brakingStopTime = new Date
+    brakingTime = (brakingStopTime - brakingStartTime) / 1000
     brakingDistance = tripDistance - startingDistance
-    setField('braking-distance', brakingDistance + ' meters')
+    setField('braking-distance', brakingDistance + (speedUnitMode == 0 ? ' meters' : ' feet'))
+    setField('braking-time', brakingTime.toFixed(1) + ' s')
     updateStatistics = false
   }
 
   if (updateStatistics) {
     if (speed > maxSpeedSinceStop) {
       maxSpeedSinceStop = speed
-      accelerationStop = new Date
-      accelerationTime = (accelerationStop - accelerationStart) / 1000
+      accelerationStopTime = new Date
+      accelerationTime = (accelerationStopTime - accelerationStartTime) / 1000
       setField('max-speed-since-stop', maxSpeedSinceStop.toFixed(1) + (speedUnitMode == 0 ? ' km/h' : ' mi/h'))
       setField('acceleration-time', accelerationTime.toFixed(1) + ' s')
     }
@@ -310,8 +315,12 @@ function updatePhaseCurrentStatistics() {
   }
 
   if (updateStatistics) {
-    if (startingDistance == 0 && phaseCurrent < -5)
+    if (startingDistance == 0 && phaseCurrent < -5) {
       startingDistance = tripDistance
+      brakingStartTime = new Date
+      brakingSpeed = speed
+      setField('braking-speed', brakingSpeed.toFixed(1) + (speedUnitMode == 0 ? ' km/h' : ' mi/h'))
+    }
 
     if (phaseCurrent > maxPhaseCurrentSinceStop) {
       maxPhaseCurrentSinceStop = phaseCurrent
