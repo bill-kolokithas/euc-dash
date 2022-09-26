@@ -5,6 +5,7 @@ const BaseCellSeries = 16
 const FramePacketLength = 24
 const BluetoothPacketLength = 20
 const ResetStatisticsSpeedThreshold = 3
+const BrakingCurrentThreshold = -20
 
 function modelParams() {
   switch(wheelModel) {
@@ -315,7 +316,7 @@ function updatePhaseCurrentStatistics() {
   }
 
   if (updateStatistics) {
-    if (startingDistance == 0 && phaseCurrent < -5) {
+    if (startingDistance == 0 && phaseCurrent < BrakingCurrentThreshold) {
       startingDistance = tripDistance
       brakingStartTime = new Date
       brakingSpeed = speed
