@@ -4,7 +4,7 @@ const MaxCellVolt = 4.2
 const BaseCellSeries = 16
 const FramePacketLength = 24
 const BluetoothPacketLength = 20
-const ResetStatisticsSpeedThreshold = 3
+const ResetStatisticsSpeedThreshold = 4
 const BrakingCurrentThreshold = -20
 
 function modelParams() {
@@ -193,8 +193,13 @@ async function setPwmLimit(pwmLimit) {
   pwmLimit = pwmLimit.padStart(2, '0')
   await sendCommand('pwmLimit', pwmLimit)
 }
+
 function setField(field, value) {
   document.getElementById(field).value = value
+}
+
+function clearField(field, value) {
+  document.getElementById(field).value = null
 }
 
 async function setWheelModel(data) {
@@ -277,21 +282,32 @@ function updateSpeedStatistics() {
 
   if (!updateStatistics && speed > ResetStatisticsSpeedThreshold) {
     maxSpeedSinceStop = 0
+    clearField('max-speed-since-stop')
     maxPhaseCurrentSinceStop = 0
+    clearField('max-phase-current-since-stop')
     minPhaseCurrentSinceStop = 0
+    clearField('min-phase-current-since-stop')
     batteryStart = battery
     voltageSag = 0
+    clearField('voltage-sag')
     startingDistance = 0
     brakingDistance = 0
+    clearField('braking-distance')
     brakingSpeed = 0
+    clearField('braking-speed')
     accelerationStartTime = new Date
+    clearField('acceleration-time')
+    brakingStartTime = new Date
+    clearField('braking-time')
     updateStatistics = true
   } else if (updateStatistics && speed <= ResetStatisticsSpeedThreshold) {
-    brakingStopTime = new Date
-    brakingTime = (brakingStopTime - brakingStartTime) / 1000
-    brakingDistance = tripDistance - startingDistance
-    setField('braking-distance', brakingDistance + (speedUnitMode == 0 ? ' meters' : ' feet'))
-    setField('braking-time', brakingTime.toFixed(1) + ' s')
+    if (brakingSpeed != 0) {
+      brakingStopTime = new Date
+      brakingTime = (brakingStopTime - brakingStartTime) / 1000
+      brakingDistance = tripDistance - startingDistance
+      setField('braking-distance', brakingDistance + (speedUnitMode == 0 ? ' meters' : ' feet'))
+      setField('braking-time', brakingTime.toFixed(1) + ' s')
+    }
     updateStatistics = false
   }
 
