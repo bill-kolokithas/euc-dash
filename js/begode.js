@@ -21,14 +21,16 @@ function modelParams() {
     case 'EX':          return { 'voltMultiplier': 1.50, 'minCellVolt': 3.25 }
     case 'Monster':     return { 'voltMultiplier': 1.50, 'minCellVolt': 3.25 }
     case 'HERO':        return { 'voltMultiplier': 1.50, 'minCellVolt': 3.1 }
+    case 'T4':          return { 'voltMultiplier': 1.50, 'minCellVolt': 3.1 }
     case 'Nikola':      return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
-    case 'T4':          return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
     case 'EXN C30':     return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
     case 'EXN C38':     return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
     case 'EX20S C30':   return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
     case 'EX20S C38':   return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
     case 'Monster Pro': return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
     case 'Master Pro':  return { 'voltMultiplier': 2,    'minCellVolt': 3.1 }
+    case 'Master X':    return { 'voltMultiplier': 2,    'minCellVolt': 3.1 }
+    case 'Torque':      return { 'voltMultiplier': 2,    'minCellVolt': 3.1 }
     case 'Master':      return { 'voltMultiplier': 2,    'minCellVolt': 3.05 }
     case 'Master C38':  return { 'voltMultiplier': 2,    'minCellVolt': 3.05 }
     default:            return { 'voltMultiplier': 1,    'minCellVolt': 3.3 }
@@ -123,6 +125,7 @@ async function initialize() {
   updateTiltbackSpeed = true
   updatePwmLimit = true
   logs = ''
+  framePacket1Support = false
   frame = new Uint8Array(FramePacketLength)
   previousFrame = new Uint8Array(FramePacketLength)
   previousFrameLength = 0
@@ -134,6 +137,11 @@ async function initialize() {
   updateVoltageHelpText()
 
   await sendCommand('fetchModel')
+}
+
+function enableFramePacket1Support() {
+  showPwmLimitSetting()
+  document.getElementById('remaining-distance-field').style.display = null
 }
 
 function disconnect() {
@@ -213,11 +221,6 @@ async function setWheelModel(data) {
 function setFirmware(data) {
   firmware = Decoder.decode(data.buffer.slice(2))
   setField('firmware', firmware)
-
-  if (wheelModel.startsWith('Master')) {
-    showPwmLimitSetting()
-    document.getElementById('remaining-distance-field').style.display = null
-  }
 }
 
 function showPwmLimitSetting() {
@@ -395,7 +398,7 @@ function parseFramePacket0(data) {
   setField('speed', speed.toFixed(1) + (speedUnitMode == 0 ? ' km/h' : ' mi/h'))
   updateSpeedStatistics()
 
-  if (wheelModel.startsWith('Master')) {
+  if (framePacket1Support) {
     remainingDistance = data.getUint16(6)
     setField('remaining-distance', remainingDistance + (speedUnitMode == 0 ? ' km' : ' mi'))
   }
@@ -524,9 +527,16 @@ function handleRegularData(data) {
 
 function handleFrameData(data) {
   switch(data.getUint8(18)) {
-    case 0: return parseFramePacket0(data)
-    case 1: return parseFramePacket1(data)
-    case 4: return parseFramePacket4(data)
+    case 0:
+      return parseFramePacket0(data)
+    case 1:
+      if (!framePacket1Support) {
+        enableFramePacket1Support()
+        framePacket1Support = true
+      }
+      return parseFramePacket1(data)
+    case 4:
+      return parseFramePacket4(data)
   }
 }
 
