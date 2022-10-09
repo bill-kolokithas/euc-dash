@@ -105,6 +105,7 @@ async function scan() {
 async function initialize() {
   speedUnitMode = 0
   pwmAlarmSpeed = 0
+  phaseCurrent = 0
   maxSpeed = 0
   maxSpeedSinceStop = 0
   maxPhaseCurrent = 0
@@ -140,7 +141,7 @@ async function initialize() {
 }
 
 function enableFramePacket1Support() {
-  showPwmLimitSetting()
+  document.getElementById('pwm-limit-slider').style.display = null
   document.getElementById('remaining-distance-field').style.display = null
 }
 
@@ -221,12 +222,6 @@ async function setWheelModel(data) {
 function setFirmware(data) {
   firmware = Decoder.decode(data.buffer.slice(2))
   setField('firmware', firmware)
-}
-
-function showPwmLimitSetting() {
-  document.getElementById('pwm-limit').value = 80
-  document.getElementById('pwm-limit-label').innerHTML = 80
-  document.getElementById('pwm-limit-slider').style.display = null
 }
 
 async function switchToMainPackets() {
@@ -474,8 +469,8 @@ function parseFramePacket4(data) {
 function parseFramePacket1(data) {
   pwmLimit = data.getUint16(2)
   if (updatePwmLimit) {
-    document.getElementById('pwm-limit-label').innerHTML = pwmLimit
     document.getElementById('pwm-limit').value = pwmLimit
+    document.getElementById('pwm-limit-label').innerHTML = pwmLimit
   }
 }
 
