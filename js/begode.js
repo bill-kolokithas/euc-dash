@@ -351,7 +351,7 @@ function updateBatteryStatistics() {
   if (battery > maxBattery) {
     maxBattery = battery
     setField('max-battery', maxBattery.toFixed(1) + '%')
-  } else if (battery < minBattery && phaseCurrent > 10) {
+  } else if (battery < minBattery && Math.abs(phaseCurrent) > 10) {
     minBattery = battery
     setField('min-battery', minBattery.toFixed(1) + '%')
   }
