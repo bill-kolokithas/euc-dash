@@ -13,6 +13,7 @@ function modelParams() {
     case 'MCM5':        return { 'voltMultiplier': 1.25, 'minCellVolt': 3.3 }
     case 'T3':          return { 'voltMultiplier': 1.25, 'minCellVolt': 3.25 }
     case 'Mten4':       return { 'voltMultiplier': 1.25, 'minCellVolt': 3.1 }
+    case 'Mt3n4':       return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
     case 'Msuper Pro':  return { 'voltMultiplier': 1.50, 'minCellVolt': 3.25 }
     case 'MSP C30':     return { 'voltMultiplier': 1.50, 'minCellVolt': 3.25 }
     case 'MSP C38':     return { 'voltMultiplier': 1.50, 'minCellVolt': 3.25 }
@@ -477,7 +478,7 @@ function parseFramePacket1(data) {
   }
 
   voltage = data.getUint16(6) / 10
-  setField('voltage', voltage + ' V')
+  setField('voltage', voltage.toFixed(1) + ' V')
   updateBatteryStatistics()
 }
 
