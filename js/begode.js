@@ -142,6 +142,7 @@ async function initialize() {
 }
 
 function enableFramePacket1Support() {
+  framePacket1Support = true
   document.getElementById('pwm-limit-slider').style.display = null
   document.getElementById('remaining-distance-field').style.display = null
 }
@@ -349,6 +350,10 @@ function updatePhaseCurrentStatistics() {
 }
 
 function updateBatteryStatistics() {
+  battery = 100 * (voltage / BaseCellSeries - modelParams()['minCellVolt']) /
+    (MaxCellVolt - modelParams()['minCellVolt'])
+  setField('battery', battery.toFixed(1) + '%')
+
   if (battery > maxBattery) {
     maxBattery = battery
     setField('max-battery', maxBattery.toFixed(1) + '%')
@@ -381,14 +386,12 @@ function updateVoltageHelpText() {
 }
 
 function parseFramePacket0(data) {
-  voltage = data.getUint16(2) / 100
-  scaledVoltage = (voltage * modelParams()['voltMultiplier']).toFixed(1)
-  setField('voltage', scaledVoltage + ' V')
-
-  battery = 100 * (voltage / BaseCellSeries - modelParams()['minCellVolt']) /
-    (MaxCellVolt - modelParams()['minCellVolt'])
-  setField('battery', battery.toFixed(1) + '%')
-  updateBatteryStatistics()
+  if (!framePacket1Support) {
+    voltage = data.getUint16(2) / 100
+    scaledVoltage = (voltage * modelParams()['voltMultiplier']).toFixed(1)
+    setField('voltage', scaledVoltage + ' V')
+    updateBatteryStatistics()
+  }
 
   speed = Math.abs(data.getInt16(4) * 3.6 / 100)
   setField('speed', speed.toFixed(1) + (speedUnitMode == 0 ? ' km/h' : ' mi/h'))
@@ -473,6 +476,10 @@ function parseFramePacket1(data) {
     document.getElementById('pwm-limit').value = pwmLimit
     document.getElementById('pwm-limit-label').innerHTML = pwmLimit
   }
+
+  voltage = data.getUint16(6) / 10
+  setField('voltage', voltage + ' V')
+  updateBatteryStatistics()
 }
 
 function readMainPackets(event) {
@@ -526,10 +533,9 @@ function handleFrameData(data) {
     case 0:
       return parseFramePacket0(data)
     case 1:
-      if (!framePacket1Support) {
+      if (!framePacket1Support)
         enableFramePacket1Support()
-        framePacket1Support = true
-      }
+
       return parseFramePacket1(data)
     case 4:
       return parseFramePacket4(data)
