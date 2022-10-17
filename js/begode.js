@@ -201,7 +201,6 @@ async function setTiltbackSpeed(speed) {
 
 async function setPwmLimit(pwmLimit) {
   updatePwmLimit = true
-  pwmLimit = pwmLimit.padStart(2, '0')
   await sendCommand('pwmLimit', pwmLimit)
 }
 
