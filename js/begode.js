@@ -6,6 +6,7 @@ const FramePacketLength = 24
 const BluetoothPacketLength = 20
 const ResetStatisticsSpeedThreshold = 4
 const BrakingCurrentThreshold = -20
+const PwmTiltbackMode = 3
 
 function modelParams() {
   switch(wheelModel) {
@@ -106,6 +107,7 @@ async function scan() {
 
 async function initialize() {
   speedUnitMode = 0
+  speedAlertMode = 0
   pwmAlarmSpeed = 0
   phaseCurrent = 0
   maxSpeed = 0
@@ -208,6 +210,10 @@ async function setPwmLimit(pwmLimit) {
   await sendCommand('pwmLimit', pwmLimit)
 }
 
+function getField(field) {
+  return document.getElementById(field)
+}
+
 function showField(field) {
   getField(field).style.display = null
 }
@@ -220,16 +226,12 @@ function checkField(field) {
   getField(field).checked = true
 }
 
-function getField(field) {
-  return document.getElementById(field)
-}
-
 function setField(field, value) {
-  document.getElementById(field).value = value
+  getField(field).value = value
 }
 
 function clearField(field, value) {
-  document.getElementById(field).value = null
+  getField(field).value = null
 }
 
 async function setWheelModel(data) {
@@ -450,7 +452,7 @@ function parseFramePacket0(data) {
     pwm = data_value / 100
     setField('pwm', pwm.toFixed(1) + '%')
     updatePwmStatistics()
-  } else if (data_value > 100) {
+  } else if (speedAlertMode == PwmTiltbackMode) {
     hideField('resets-field')
     showField('pwm-field')
     showField('max-pwm-field')
