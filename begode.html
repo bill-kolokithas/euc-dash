@@ -57,6 +57,12 @@
                   <input class="form-control" id="speed" type="text" value="" disabled readonly>
                 </div>
               </div>
+              <div class="mb-2 row" id="pwm-field" style="display:none">
+                <label class="col-lg-5 col-form-label" for="pwm">PWM:</label>
+                <div class="col-lg-7">
+                  <input class="form-control" id="pwm" type="text" value="" disabled readonly>
+                </div>
+              </div>
               <div class="mb-2 row">
                 <label class="col-lg-5 col-form-label" for="phase-current">Phase current:</label>
                 <div class="col-lg-7">
@@ -294,7 +300,7 @@
                     <small class="form-text text-muted">pwm, overheat, overvoltage etc</small>
                   </div>
                 </div>
-                <div class="mb-2 row">
+                <div class="mb-2 row" id="resets-field">
                   <label class="col-lg-5 col-form-label" for="resets">Resets:</label>
                   <div class="col-lg-7">
                     <input class="form-control" id="resets" type="text" value="" disabled readonly>
@@ -383,6 +389,12 @@
                     <input class="form-control" id="max-speed" type="text" value="" disabled readonly>
                   </div>
                 </div>
+                <div class="mb-2 row" id="max-pwm-field" style="display:none">
+                  <label class="col-lg-5 col-form-label" for="max-pwm">Max PWM:</label>
+                  <div class="col-lg-7">
+                    <input class="form-control" id="max-pwm" type="text" value="" disabled readonly>
+                  </div>
+                </div>
                 <div class="mb-2 row">
                   <label class="col-lg-5 col-form-label" for="max-phase-current">Max phase current:</label>
                   <div class="col-lg-7">
@@ -412,6 +424,12 @@
                   <label class="col-lg-5 col-form-label" for="max-speed-since-stop">Max speed:</label>
                   <div class="col-lg-7">
                     <input class="form-control" id="max-speed-since-stop" type="text" value="" disabled readonly>
+                  </div>
+                </div>
+                <div class="mb-2 row" id="max-pwm-since-stop-field" style="display:none">
+                  <label class="col-lg-5 col-form-label" for="max-pwm-since-stop">Max PWM:</label>
+                  <div class="col-lg-7">
+                    <input class="form-control" id="max-pwm-since-stop" type="text" value="" disabled readonly>
                   </div>
                 </div>
                 <div class="mb-2 row">

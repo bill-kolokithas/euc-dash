@@ -110,6 +110,8 @@ async function initialize() {
   phaseCurrent = 0
   maxSpeed = 0
   maxSpeedSinceStop = 0
+  maxPwm = 0
+  maxPwmSinceStop = 0
   maxPhaseCurrent = 0
   maxPhaseCurrentSinceStop = 0
   minPhaseCurrent = 0
@@ -121,6 +123,7 @@ async function initialize() {
   brakingDistance = 0
   brakingSpeed = 0
   updateStatistics = false
+  pwmEnabled = false
   polarity = 1
   rendered = false
   wheelModel = ''
@@ -132,11 +135,11 @@ async function initialize() {
   frame = new Uint8Array(FramePacketLength)
   previousFrame = new Uint8Array(FramePacketLength)
   previousFrameLength = 0
-  document.getElementById('scan-disconnect').innerText = 'Disconnect'
-  document.getElementById('scan-disconnect').className = 'btn-lg btn-danger'
-  document.getElementById('scan-disconnect').onclick = disconnect
-  document.getElementById('packet-switch').classList.remove('invisible')
-  document.getElementById('save-logs').classList.remove('invisible')
+  getField('scan-disconnect').innerText = 'Disconnect'
+  getField('scan-disconnect').className = 'btn-lg btn-danger'
+  getField('scan-disconnect').onclick = disconnect
+  getField('packet-switch').classList.remove('invisible')
+  getField('save-logs').classList.remove('invisible')
   updateVoltageHelpText()
 
   await sendCommand('fetchModel')
@@ -144,21 +147,21 @@ async function initialize() {
 
 function enableFramePacket1Support() {
   framePacket1Support = true
-  document.getElementById('pwm-limit-slider').style.display = null
-  document.getElementById('remaining-distance-field').style.display = null
+  showField('pwm-limit-slider')
+  showField('remaining-distance-field')
 }
 
 function disconnect() {
   device.gatt.disconnect()
-  document.getElementById('scan-disconnect').innerText = 'Scan & Connect'
-  document.getElementById('scan-disconnect').className = 'btn-lg btn-primary'
-  document.getElementById('scan-disconnect').onclick = scan
-  document.getElementById('packet-switch').classList.add('invisible')
-  document.getElementById('save-logs').classList.add('invisible')
+  getField('scan-disconnect').innerText = 'Scan & Connect'
+  getField('scan-disconnect').className = 'btn-lg btn-primary'
+  getField('scan-disconnect').onclick = scan
+  getField('packet-switch').classList.add('invisible')
+  getField('save-logs').classList.add('invisible')
 }
 
 function saveLogs() {
-  anchor = document.getElementById('save-logs')
+  anchor = getField('save-logs')
   file = new Blob([logs], { type: 'text/plain' })
   anchor.href = URL.createObjectURL(file)
   filename = 'euc-dash-logs'
@@ -205,6 +208,22 @@ async function setPwmLimit(pwmLimit) {
   await sendCommand('pwmLimit', pwmLimit)
 }
 
+function showField(field) {
+  getField(field).style.display = null
+}
+
+function hideField(field) {
+  getField(field).style.display = 'none'
+}
+
+function checkField(field) {
+  getField(field).checked = true
+}
+
+function getField(field) {
+  return document.getElementById(field)
+}
+
 function setField(field, value) {
   document.getElementById(field).value = value
 }
@@ -228,20 +247,20 @@ function setFirmware(data) {
 
 async function switchToMainPackets() {
   characteristic.removeEventListener('characteristicvaluechanged', readExtendedPackets)
-  document.getElementById('extended').style.display = 'none'
-  document.getElementById('main').style.display = null
-  document.getElementById('packet-switch').innerText = 'Extended packets ->'
-  document.getElementById('packet-switch').onclick = switchToExtendedPackets
+  hideField('extended')
+  showField('main')
+  getField('packet-switch').innerText = 'Extended packets ->'
+  getField('packet-switch').onclick = switchToExtendedPackets
   await sendCommand('mainPacket')
   characteristic.addEventListener('characteristicvaluechanged', readMainPackets)
 }
 
 async function switchToExtendedPackets() {
   characteristic.removeEventListener('characteristicvaluechanged', readMainPackets)
-  document.getElementById('main').style.display = 'none'
-  document.getElementById('extended').style.display = null
-  document.getElementById('packet-switch').innerText = '<- Main packets'
-  document.getElementById('packet-switch').onclick = switchToMainPackets
+  hideField('main')
+  showField('extended')
+  getField('packet-switch').innerText = '<- Main packets'
+  getField('packet-switch').onclick = switchToMainPackets
   line = ''
   setupGauge()
   await sendCommand('extendedPacket')
@@ -250,11 +269,11 @@ async function switchToExtendedPackets() {
 
 function reversePolarity() {
   if (polarity == 1) {
-    document.getElementById('reverse-polarity').className = 'btn btn-sm btn-outline-danger'
-    document.getElementById('reverse-polarity').innerText = 'Negative'
+    getField('reverse-polarity').className = 'btn btn-sm btn-outline-danger'
+    getField('reverse-polarity').innerText = 'Negative'
   } else {
-    document.getElementById('reverse-polarity').className = 'btn btn-sm btn-outline-success'
-    document.getElementById('reverse-polarity').innerText = 'Positive'
+    getField('reverse-polarity').className = 'btn btn-sm btn-outline-success'
+    getField('reverse-polarity').innerText = 'Positive'
   }
 
   polarity = -polarity
@@ -283,6 +302,8 @@ function updateSpeedStatistics() {
   if (!updateStatistics && speed > ResetStatisticsSpeedThreshold) {
     maxSpeedSinceStop = 0
     clearField('max-speed-since-stop')
+    maxPwmSinceStop = 0
+    clearField('max-pwm-since-stop')
     maxPhaseCurrentSinceStop = 0
     clearField('max-phase-current-since-stop')
     minPhaseCurrentSinceStop = 0
@@ -311,14 +332,12 @@ function updateSpeedStatistics() {
     updateStatistics = false
   }
 
-  if (updateStatistics) {
-    if (speed > maxSpeedSinceStop) {
-      maxSpeedSinceStop = speed
-      accelerationStopTime = new Date
-      accelerationTime = (accelerationStopTime - accelerationStartTime) / 1000
-      setField('max-speed-since-stop', maxSpeedSinceStop.toFixed(1) + (speedUnitMode == 0 ? ' km/h' : ' mi/h'))
-      setField('acceleration-time', accelerationTime.toFixed(1) + ' s')
-    }
+  if (updateStatistics && speed > maxSpeedSinceStop) {
+    maxSpeedSinceStop = speed
+    accelerationStopTime = new Date
+    accelerationTime = (accelerationStopTime - accelerationStartTime) / 1000
+    setField('max-speed-since-stop', maxSpeedSinceStop.toFixed(1) + (speedUnitMode == 0 ? ' km/h' : ' mi/h'))
+    setField('acceleration-time', accelerationTime.toFixed(1) + ' s')
   }
 }
 
@@ -357,7 +376,7 @@ function updateBatteryStatistics() {
   if (battery > maxBattery) {
     maxBattery = battery
     setField('max-battery', maxBattery.toFixed(1) + '%')
-  } else if (battery < minBattery && Math.abs(phaseCurrent) > 10) {
+  } else if (battery < minBattery && Math.abs(phaseCurrent) > 5) {
     minBattery = battery
     setField('min-battery', minBattery.toFixed(1) + '%')
   }
@@ -378,11 +397,23 @@ function updateTemperatureStatistics() {
   }
 }
 
+function updatePwmStatistics() {
+  if (pwm > maxPwm) {
+    maxPwm = pwm
+    setField('max-pwm', maxPwm.toFixed(1) + '%')
+  }
+
+  if (updateStatistics && pwm > maxPwmSinceStop) {
+    maxPwmSinceStop = pwm
+    setField('max-pwm-since-stop', maxPwmSinceStop.toFixed(1) + '%')
+  }
+}
+
 function updateVoltageHelpText() {
   minVoltage = (modelParams()['voltMultiplier'] * modelParams()['minCellVolt'] * 16).toFixed(1)
   maxVoltage = (modelParams()['voltMultiplier'] * MaxCellVolt * 16).toFixed(1)
 
-  document.getElementById('voltage-help').innerText = `min: ${minVoltage} V  max: ${maxVoltage} V`
+  getField('voltage-help').innerText = `min: ${minVoltage} V  max: ${maxVoltage} V`
 }
 
 function parseFramePacket0(data) {
@@ -414,14 +445,27 @@ function parseFramePacket0(data) {
   setField('temperature', temperature.toFixed(2) + ' °C')
   updateTemperatureStatistics()
 
-  resets = data.getUint16(14)
-  if (resets > 10)
-    resets -= 9
-  setField('resets', resets)
+  data_value = Math.abs(data.getInt16(14))
+  if (pwmEnabled) {
+    pwm = data_value / 100
+    setField('pwm', pwm.toFixed(1) + '%')
+    updatePwmStatistics()
+  } else if (data_value > 100) {
+    hideField('resets-field')
+    showField('pwm-field')
+    showField('max-pwm-field')
+    showField('max-pwm-since-stop-field')
+    pwmEnabled = true
+  } else {
+    resets = data_value
+    if (resets > 10)
+      resets -= 9
+    setField('resets', resets)
+  }
 
   volume = data.getUint16(16)
   if (volume >= 1 && volume <= 9)
-    document.getElementById(`volume-${volume}`).checked = true
+    checkField(`volume-${volume}`)
 }
 
 function parseFramePacket4(data) {
@@ -434,10 +478,10 @@ function parseFramePacket4(data) {
   rollAngleMode  = modes >>  7 & 0x3
   speedUnitMode  = modes & 0x1
 
-  document.getElementById(`pedal-mode-${pedalMode}`).checked = true
-  document.getElementById(`speed-alert-${speedAlertMode}`).checked = true
-  document.getElementById(`roll-angle-${rollAngleMode}`).checked = true
-  document.getElementById(`speed-unit-${speedUnitMode}`).checked = true
+  checkField(`pedal-mode-${pedalMode}`)
+  checkField(`speed-alert-${speedAlertMode}`)
+  checkField(`roll-angle-${rollAngleMode}`)
+  checkField(`speed-unit-${speedUnitMode}`)
 
   powerOffTime = data.getUint16(8)
   powerOffMinutes = Math.floor(powerOffTime / 60)
@@ -446,12 +490,12 @@ function parseFramePacket4(data) {
 
   tiltbackSpeed = data.getUint16(10)
   if (updateTiltbackSpeed) {
-    document.getElementById('tiltback-speed-label').innerHTML = tiltbackSpeed >= 100 ? 'Disabled' : tiltbackSpeed
-    document.getElementById('tiltback-speed').value = tiltbackSpeed
+    getField('tiltback-speed-label').innerHTML = tiltbackSpeed >= 100 ? 'Disabled' : tiltbackSpeed
+    getField('tiltback-speed').value = tiltbackSpeed
   }
 
   ledMode = data.getUint16(12)
-  document.getElementById(`led-mode-${ledMode}`).checked = true
+  checkField(`led-mode-${ledMode}`)
 
   faultAlarm = data.getUint8(14)
   faultAlarmLine = ''
@@ -467,14 +511,14 @@ function parseFramePacket4(data) {
     updatePwmAlarmSpeed()
 
   lightMode = data.getUint8(15) % 3
-  document.getElementById(`light-mode-${lightMode}`).checked = true
+  checkField(`light-mode-${lightMode}`)
 }
 
 function parseFramePacket1(data) {
   pwmLimit = data.getUint16(2)
   if (updatePwmLimit) {
-    document.getElementById('pwm-limit').value = pwmLimit
-    document.getElementById('pwm-limit-label').innerHTML = pwmLimit
+    getField('pwm-limit').value = pwmLimit
+    getField('pwm-limit-label').innerHTML = pwmLimit
   }
 
   voltage = data.getUint16(6) / 10
@@ -600,7 +644,7 @@ function readExtendedPackets(event) {
     else {
       html = ''
       keys.forEach((key, i) => html += appendElement(key, values[i]))
-      document.getElementById('extended-data').innerHTML = html
+      getField('extended-data').innerHTML = html
       rendered = true
     }
 
