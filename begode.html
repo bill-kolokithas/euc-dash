@@ -128,13 +128,13 @@
                   <div class="col-lg-7">
                     <div class="btn-group" role="group">
                       <input type="radio" class="btn-check" name="speed-alerts" id="speed-alert-0" onclick="sendCommand('alertsOne')">
-                      <label class="btn btn-outline-primary" for="speed-alert-0">1</label>
+                      <label class="btn btn-outline-primary" for="speed-alert-0">1 &amp; 2</label>
 
                       <input type="radio" class="btn-check" name="speed-alerts" id="speed-alert-1" onclick="sendCommand('alertsTwo')">
                       <label class="btn btn-outline-primary" for="speed-alert-1">2</label>
 
                       <input type="radio" class="btn-check" name="speed-alerts" id="speed-alert-2" onclick="sendCommand('alertsOff')">
-                      <label class="btn btn-outline-primary" for="speed-alert-2">Off</label>
+                      <label class="btn btn-outline-primary" for="speed-alert-2">PWM</label>
 
                       <input type="radio" class="btn-check" name="speed-alerts" id="speed-alert-3" onclick="sendCommand('alertsTiltback')">
                       <label class="btn btn-outline-primary" for="speed-alert-3">PWM tiltback</label>
@@ -304,14 +304,14 @@
                   <label class="col-lg-5 col-form-label" for="resets">Resets:</label>
                   <div class="col-lg-7">
                     <input class="form-control" id="resets" type="text" value="" disabled readonly>
-                    <small class="form-text text-muted">the number of motor re-engages</small>
+                    <small class="form-text text-muted">The number of motor initializations</small>
                   </div>
                 </div>
                 <div class="mb-2 row">
                   <label class="col-lg-5 col-form-label" for="poweroff-timer">Poweroff Timer:</label>
                   <div class="col-lg-7">
                     <input class="form-control" id="poweroff-timer" type="text" value="" disabled readonly>
-                    <small class="form-text text-muted">restarts when moved</small>
+                    <small class="form-text text-muted">Restarts when moved</small>
                   </div>
                 </div>
               </div>
@@ -325,7 +325,7 @@
                   <label class="col-lg-5 col-form-label" for="pwm-alarm-speed">Alarm speed at current battery:</label>
                   <div class="col-lg-7">
                     <input class="form-control" id="pwm-alarm-speed" type="text" value="" disabled readonly>
-                    <small class="form-text text-muted">perform a free spin to detect speed</small>
+                    <small class="form-text text-muted">Perform a free spin to detect speed</small>
                   </div>
                 </div>
                 <div class="mb-2 row">
