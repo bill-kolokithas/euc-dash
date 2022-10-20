@@ -449,7 +449,7 @@ function parseFramePacket0(data) {
 
   data_value = Math.abs(data.getInt16(14))
   if (pwmEnabled) {
-    pwm = data_value / 100
+    pwm = data_value / 10
     setField('pwm', pwm.toFixed(1) + '%')
     updatePwmStatistics()
   } else if (speedAlertMode == PwmTiltbackMode) {
