@@ -7,6 +7,7 @@ const BluetoothPacketLength = 20
 const ResetStatisticsSpeedThreshold = 4
 const BrakingCurrentThreshold = -20
 const PwmTiltbackMode = 3
+const FirmwareVersionSize = 9
 
 function modelParams() {
   switch(wheelModel) {
@@ -101,8 +102,8 @@ async function scan() {
   service = await server.getPrimaryService(0xFFE0)
   characteristic = await service.getCharacteristic(0xFFE1)
   await characteristic.startNotifications()
-  characteristic.addEventListener('characteristicvaluechanged', readMainPackets)
-  initialize()
+  await characteristic.addEventListener('characteristicvaluechanged', readMainPackets)
+  await initialize()
 }
 
 async function initialize() {
@@ -243,7 +244,11 @@ async function setWheelModel(data) {
 }
 
 function setFirmware(data) {
-  firmware = Decoder.decode(data.buffer.slice(2))
+  firmware = Decoder.decode(data.buffer)
+
+  if (firmware.startsWith('CF'))
+    enableCustomFirmwareFeatures()
+
   setField('firmware', firmware)
 }
 
@@ -267,6 +272,16 @@ async function switchToExtendedPackets() {
   setupGauge()
   await sendCommand('extendedPacket')
   characteristic.addEventListener('characteristicvaluechanged', readExtendedPackets)
+}
+
+function enableCustomFirmwareFeatures() {
+  hideField('resets-field')
+  showField('pwm-field')
+  showField('max-pwm-field')
+  showField('max-pwm-since-stop-field')
+  pwmEnabled = true
+
+  getField('firmware-help-text').innerHTML = 'Custom Firmware detected'
 }
 
 function reversePolarity() {
@@ -371,8 +386,10 @@ function updatePhaseCurrentStatistics() {
 }
 
 function updateBatteryStatistics() {
-  battery = 100 * (voltage / BaseCellSeries - modelParams()['minCellVolt']) /
+  battery = 100 * (voltage /
+    (modelParams()['voltMultiplier'] * BaseCellSeries) - modelParams()['minCellVolt']) /
     (MaxCellVolt - modelParams()['minCellVolt'])
+
   setField('battery', battery.toFixed(1) + '%')
 
   if (battery > maxBattery) {
@@ -412,17 +429,16 @@ function updatePwmStatistics() {
 }
 
 function updateVoltageHelpText() {
-  minVoltage = (modelParams()['voltMultiplier'] * modelParams()['minCellVolt'] * 16).toFixed(1)
-  maxVoltage = (modelParams()['voltMultiplier'] * MaxCellVolt * 16).toFixed(1)
+  minVoltage = (modelParams()['voltMultiplier'] * modelParams()['minCellVolt'] * BaseCellSeries).toFixed(1)
+  maxVoltage = (modelParams()['voltMultiplier'] * MaxCellVolt * BaseCellSeries).toFixed(1)
 
   getField('voltage-help').innerText = `min: ${minVoltage} V  max: ${maxVoltage} V`
 }
 
 function parseFramePacket0(data) {
   if (!framePacket1Support) {
-    voltage = data.getUint16(2) / 100
-    scaledVoltage = (voltage * modelParams()['voltMultiplier']).toFixed(1)
-    setField('voltage', scaledVoltage + ' V')
+    voltage = data.getUint16(2) / 100 * modelParams()['voltMultiplier']
+    setField('voltage', voltage.toFixed(1) + ' V')
     updateBatteryStatistics()
   }
 
@@ -452,12 +468,6 @@ function parseFramePacket0(data) {
     pwm = data_value / 10
     setField('pwm', pwm.toFixed(1) + '%')
     updatePwmStatistics()
-  } else if (speedAlertMode == PwmTiltbackMode) {
-    hideField('resets-field')
-    showField('pwm-field')
-    showField('max-pwm-field')
-    showField('max-pwm-since-stop-field')
-    pwmEnabled = true
   } else {
     resets = data_value
     if (resets > 10)
@@ -570,7 +580,7 @@ function readMainPackets(event) {
 function handleRegularData(data) {
   if (data.getUint32(0) == 0x4E414D45)
     setWheelModel(data)
-  else if (data.getInt16(0) == 0x4757)
+  else if ((data.getInt16(0) == 0x4757 || data.getInt16(0) == 0x4346) && data.byteLength == FirmwareVersionSize)
     setFirmware(data)
 }
 
