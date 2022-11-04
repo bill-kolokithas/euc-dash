@@ -187,6 +187,7 @@ function saveLogs() {
 
 async function startYmodem() {
   await sendCommand('startIAP')
+  await new Promise(r => setTimeout(r, CommandWriteDelay))
   await sendBytes([1])
 }
 
