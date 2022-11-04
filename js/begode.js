@@ -8,6 +8,7 @@ const ResetStatisticsSpeedThreshold = 4
 const BrakingCurrentThreshold = -20
 const PwmTiltbackMode = 3
 const FirmwareVersionSize = 9
+const CommandWriteDelay = 200
 
 function modelParams() {
   switch(wheelModel) {
@@ -92,8 +93,14 @@ async function sendCommand(cmd, param) {
 
   for (let byte of command) {
     await characteristic.writeValue(new Uint8Array([byte]))
-    await new Promise(r => setTimeout(r, 200))
+    await new Promise(r => setTimeout(r, CommandWriteDelay))
   }
+}
+
+async function sendBytes(bytes) {
+  logs += '> ' + bytes + '\n'
+
+  await characteristic.writeValue(new Uint8Array(bytes))
 }
 
 async function scan() {
@@ -144,6 +151,8 @@ async function initialize() {
   getField('packet-switch').classList.remove('invisible')
   getField('save-logs').classList.remove('invisible')
   updateVoltageHelpText()
+  if (Debug)
+    showField('flashing-actions')
 
   await sendCommand('fetchModel')
 }
@@ -176,24 +185,18 @@ function saveLogs() {
   anchor.download = filename + '.txt'
 }
 
-async function startIAP() {
-  await sendCommand('startIAP')
-  characteristic.removeEventListener('characteristicvaluechanged', readMainPackets)
-  characteristic.addEventListener('characteristicvaluechanged',
-    (data) => console.log(Decoder.decode(data.target.value)))
-}
-
 async function startYmodem() {
-  await sendCommand([1])
+  await sendCommand('startIAP')
+  await sendBytes([1])
 }
 
 async function exitYmodem() {
-  await sendCommand([1, 0, 255, 65, 0, 1, 0].concat(Array(13).fill(0)))
+  await sendBytes([1, 0, 255, 65, 0, 1, 0].concat(Array(13).fill(0)))
 
   for (i = 0; i < 5; i++)
-    await sendCommand(Array(BluetoothPacketLength).fill(0))
+    await sendBytes(Array(BluetoothPacketLength).fill(0))
 
-  await sendCommand(Array(11).fill(0).concat([19, 77]))
+  await sendBytes(Array(11).fill(0).concat([19, 77]))
 }
 
 async function setTiltbackSpeed(speed) {
@@ -578,10 +581,15 @@ function readMainPackets(event) {
 }
 
 function handleRegularData(data) {
-  if (data.getUint32(0) == 0x4E414D45)
-    setWheelModel(data)
-  else if ((data.getInt16(0) == 0x4757 || data.getInt16(0) == 0x4346) && data.byteLength == FirmwareVersionSize)
+  if (data.byteLength == 1) {
+    characteristic.removeEventListener('characteristicvaluechanged', readMainPackets)
+    characteristic.addEventListener('characteristicvaluechanged',
+      data => logs += (Decoder.decode(data.target.value)) + '\n')
+  }
+  else if (data.byteLength == FirmwareVersionSize && (data.getInt16(0) == 0x4757 || data.getInt16(0) == 0x4346))
     setFirmware(data)
+  else if (data.getUint32(0) == 0x4E414D45)
+    setWheelModel(data)
 }
 
 function handleFrameData(data) {
