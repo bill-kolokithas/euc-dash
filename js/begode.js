@@ -17,6 +17,7 @@ function modelParams() {
     case 'T3':          return { 'voltMultiplier': 1.25, 'minCellVolt': 3.25 }
     case 'Mten4':       return { 'voltMultiplier': 1.25, 'minCellVolt': 3.1 }
     case 'Mt3n4':       return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
+    case 'Mt4n4':       return { 'voltMultiplier': 1.75, 'minCellVolt': 3.0 }
     case 'Msuper Pro':  return { 'voltMultiplier': 1.50, 'minCellVolt': 3.25 }
     case 'MSP C30':     return { 'voltMultiplier': 1.50, 'minCellVolt': 3.25 }
     case 'MSP C38':     return { 'voltMultiplier': 1.50, 'minCellVolt': 3.25 }
