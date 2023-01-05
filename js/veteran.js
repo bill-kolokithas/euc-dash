@@ -147,6 +147,9 @@ function readSecondMainPacket(data) {
 
   roll = data.getInt16(12)
   setField('roll', roll)
+
+  pwm = data.getInt16(14)
+  setField('pwm', pwm)
 }
 
 function appendElement(key, value) {
