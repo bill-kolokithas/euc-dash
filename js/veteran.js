@@ -94,10 +94,8 @@ async function readMainPackets(event) {
 
   if (data.getUint32(0) == 0xDC5A5C20)
     readFirstMainPacket(data)
-  else if (data.byteLength == 16 && data.getUint8(15) == 0)
+  else if (data.byteLength == 16)
     readSecondMainPacket(data)
-  else
-    await sendCommand('switchPackets')
 }
 
 function readFirstMainPacket(data) {
@@ -148,8 +146,8 @@ function readSecondMainPacket(data) {
   roll = data.getInt16(12)
   setField('roll', roll)
 
-  pwm = data.getInt16(14)
-  setField('pwm', pwm)
+  pwm = data.getInt16(14) / 100
+  setField('pwm', pwm.toFixed(1))
 }
 
 function appendElement(key, value) {
