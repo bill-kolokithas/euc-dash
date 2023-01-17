@@ -143,8 +143,8 @@ function readSecondMainPacket(data) {
   pedalMode = data.getUint16(10)
   setField('pedal-mode', pedalModeHuman[pedalMode])
 
-  roll = data.getInt16(12)
-  setField('roll', roll)
+  angle = data.getInt16(12)
+  setField('angle', angle)
 
   pwm = data.getInt16(14) / 100
   setField('pwm', pwm.toFixed(1))

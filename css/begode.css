@@ -32,3 +32,18 @@
 #pwm-limit-label:after {
   content: '%';
 }
+
+#proportional-label {
+  display: block;
+  text-align: center;
+}
+
+#integral-label {
+  display: block;
+  text-align: center;
+}
+
+#derivative-label {
+  display: block;
+  text-align: center;
+}

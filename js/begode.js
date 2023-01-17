@@ -10,6 +10,11 @@ const PwmTiltbackMode = 3
 const FirmwareVersionSize = 9
 const CommandWriteDelay = 200
 
+if (Debug) {
+  showField('pid-settings')
+  showField('flashing-actions')
+}
+
 function modelParams() {
   switch(wheelModel) {
     case 'Mten3':       return { 'voltMultiplier': 1.25, 'minCellVolt': 3.3 }
@@ -27,6 +32,7 @@ function modelParams() {
     case 'EXN':         return { 'voltMultiplier': 1.50, 'minCellVolt': 3.25 }
     case 'Monster':     return { 'voltMultiplier': 1.50, 'minCellVolt': 3.25 }
     case 'HERO':        return { 'voltMultiplier': 1.50, 'minCellVolt': 3.1 }
+    case 'HERO C38':    return { 'voltMultiplier': 1.50, 'minCellVolt': 3.1 }
     case 'T4':          return { 'voltMultiplier': 1.50, 'minCellVolt': 3.1 }
     case 'Nikola':      return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
     case 'EXN C30':     return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
@@ -45,34 +51,40 @@ function modelParams() {
 
 function commands(cmd, param) {
   switch(cmd) {
-    case 'mainPacket':      return [44]
-    case 'extendedPacket':  return [107]
-    case 'fetchModel':      return [78]
-    case 'fetchFirmware':   return [86]
-    case 'beep':            return [98]
-    case 'lightsOn':        return [81]
-    case 'lightsOff':       return [69]
-    case 'lightsStrobe':    return [84]
-    case 'alertsOne':       return [111]
-    case 'alertsTwo':       return [117]
-    case 'alertsOff':       return [105]
-    case 'alertsTiltback':  return [73]
-    case 'pedalSoft':       return [115]
-    case 'pedalMedium':     return [102]
-    case 'pedalHard':       return [104]
-    case 'rollAngleLow':    return [62]
-    case 'rollAngleMedium': return [61]
-    case 'rollAngleHigh':   return [60]
-    case 'speedKilometers': return [103]
-    case 'speedMiles':      return [109]
-    case 'calibrate':       return [99, 121]
-    case 'startIAP':        return [33, 64]
-    case 'tiltbackOff':     return [34]
-    case 'volume':          return [87, 66, 48 + param]
-    case 'ledMode':         return [87, 77, 48 + param]
-    case 'tiltbackSpeed':   return [87, 89, param.charCodeAt(0), param.charCodeAt(1)]
-    case 'pwmLimit':        return [87, 80, param.charCodeAt(0), param.charCodeAt(1)]
-    default:                return cmd
+    case 'mainPacket':        return [44]
+    case 'extendedPacket':    return [107]
+    case 'fetchModel':        return [78]
+    case 'fetchFirmware':     return [86]
+    case 'beep':              return [98]
+    case 'lightsOn':          return [81]
+    case 'lightsOff':         return [69]
+    case 'lightsStrobe':      return [84]
+    case 'alertsOne':         return [111]
+    case 'alertsTwo':         return [117]
+    case 'alertsOff':         return [105]
+    case 'alertsTiltback':    return [73]
+    case 'pedalSoft':         return [115]
+    case 'pedalMedium':       return [102]
+    case 'pedalHard':         return [104]
+    case 'pedalSoftCustom':   return [20]
+    case 'pedalMediumCustom': return [21]
+    case 'pedalHardCustom':   return [22]
+    case 'rollAngleLow':      return [62]
+    case 'rollAngleMedium':   return [61]
+    case 'rollAngleHigh':     return [60]
+    case 'speedKilometers':   return [103]
+    case 'speedMiles':        return [109]
+    case 'calibrate':         return [99, 121]
+    case 'startIAP':          return [33, 64]
+    case 'tiltbackOff':       return [34]
+    case 'setProportional':   return [87, 10, param]
+    case 'setIntegral':       return [87, 11, param]
+    case 'setDerivative':     return [87, 12, param]
+    case 'volume':            return [87, 66, 48 + param]
+    case 'ledMode':           return [87, 77, 48 + param]
+    case 'tiltbackSpeed':     return [87, 89, param.charCodeAt(0), param.charCodeAt(1)]
+    case 'pwmLimit':          return [87, 80, param.charCodeAt(0), param.charCodeAt(1)]
+    default:                  return cmd
   }
 }
 
@@ -85,6 +97,15 @@ const faultAlarms = {
   5: 'high temperature',
   6: 'hall sensor error',
   7: 'transport mode'
+}
+
+const pedalModes = {
+  0: 'pedalSoft',
+  1: 'pedalMedium',
+  2: 'pedalHard',
+  3: 'pedalSoftCustom',
+  4: 'pedalMediumCustom',
+  5: 'pedalHardCustom'
 }
 
 async function sendCommand(cmd, param) {
@@ -137,23 +158,27 @@ async function initialize() {
   pwmEnabled = false
   polarity = 1
   rendered = false
+  proportional = 0
+  integral = 0
+  derivative = 0
   wheelModel = ''
   firmware = ''
   updateTiltbackSpeed = true
   updatePwmLimit = true
+  updateProportional = true
+  updateIntegral = true
+  updateDerivative = true
   logs = ''
   framePacket1Support = false
   frame = new Uint8Array(FramePacketLength)
   previousFrame = new Uint8Array(FramePacketLength)
   previousFrameLength = 0
-  getField('scan-disconnect').innerText = 'Disconnect'
-  getField('scan-disconnect').className = 'btn-lg btn-danger'
+  setFieldText('scan-disconnect', 'Disconnect')
+  getField('scan-disconnect').className = 'btn btn-lg btn-danger'
   getField('scan-disconnect').onclick = disconnect
   getField('packet-switch').classList.remove('invisible')
   getField('save-logs').classList.remove('invisible')
   updateVoltageHelpText()
-  if (Debug)
-    showField('flashing-actions')
 
   await sendCommand('fetchModel')
 }
@@ -166,8 +191,8 @@ function enableFramePacket1Support() {
 
 function disconnect() {
   device.gatt.disconnect()
-  getField('scan-disconnect').innerText = 'Scan & Connect'
-  getField('scan-disconnect').className = 'btn-lg btn-primary'
+  setFieldText('scan-disconnect', 'Scan & Connect')
+  getField('scan-disconnect').className = 'btn btn-lg btn-primary'
   getField('scan-disconnect').onclick = scan
   getField('packet-switch').classList.add('invisible')
   getField('save-logs').classList.add('invisible')
@@ -216,6 +241,38 @@ async function setPwmLimit(pwmLimit) {
   await sendCommand('pwmLimit', pwmLimit)
 }
 
+
+async function setProportional(p) {
+  updateProportional = true
+  proportional = parseInt(p)
+  if (pid_settings_present())
+    showField('custom-pedal-modes')
+
+  await sendCommand('setProportional', proportional)
+}
+
+async function setIntegral(i) {
+  updateIntegral = true
+  integral = parseInt(i)
+  if (pid_settings_present())
+    showField('custom-pedal-modes')
+
+  await sendCommand('setIntegral', integral)
+}
+
+async function setDerivative(d) {
+  updateDerivative = true
+  derivative = d / 10
+  if (pid_settings_present())
+    showField('custom-pedal-modes')
+
+  await sendCommand('setDerivative', derivative)
+}
+
+function pid_settings_present() {
+  return proportional > 0 && integral > 0 && derivative > 0
+}
+
 function getField(field) {
   return document.getElementById(field)
 }
@@ -234,6 +291,14 @@ function checkField(field) {
 
 function setField(field, value) {
   getField(field).value = value
+}
+
+function setFieldHtml(field, value) {
+  getField(field).innerHTML = value
+}
+
+function setFieldText(field, value) {
+  getField(field).innerText = value
 }
 
 function clearField(field, value) {
@@ -261,7 +326,7 @@ async function switchToMainPackets() {
   characteristic.removeEventListener('characteristicvaluechanged', readExtendedPackets)
   hideField('extended')
   showField('main')
-  getField('packet-switch').innerText = 'Extended packets ->'
+  setFieldText('packet-switch', 'Extended packets ->')
   getField('packet-switch').onclick = switchToExtendedPackets
   await sendCommand('mainPacket')
   characteristic.addEventListener('characteristicvaluechanged', readMainPackets)
@@ -271,7 +336,7 @@ async function switchToExtendedPackets() {
   characteristic.removeEventListener('characteristicvaluechanged', readMainPackets)
   hideField('main')
   showField('extended')
-  getField('packet-switch').innerText = '<- Main packets'
+  setFieldText('packet-switch', '<- Main packets')
   getField('packet-switch').onclick = switchToMainPackets
   line = ''
   setupGauge()
@@ -286,16 +351,16 @@ function enableCustomFirmwareFeatures() {
   showField('max-pwm-since-stop-field')
   pwmEnabled = true
 
-  getField('firmware-help-text').innerHTML = 'Custom Firmware detected'
+  setFieldHtml('firmware-help-text', 'Custom Firmware detected')
 }
 
 function reversePolarity() {
   if (polarity == 1) {
     getField('reverse-polarity').className = 'btn btn-sm btn-outline-danger'
-    getField('reverse-polarity').innerText = 'Negative'
+    setFieldText('reverse-polarity', 'Negative')
   } else {
     getField('reverse-polarity').className = 'btn btn-sm btn-outline-success'
-    getField('reverse-polarity').innerText = 'Positive'
+    setFieldText('reverse-polarity', 'Positive')
   }
 
   polarity = -polarity
@@ -437,7 +502,7 @@ function updateVoltageHelpText() {
   minVoltage = (modelParams()['voltMultiplier'] * modelParams()['minCellVolt'] * BaseCellSeries).toFixed(1)
   maxVoltage = (modelParams()['voltMultiplier'] * MaxCellVolt * BaseCellSeries).toFixed(1)
 
-  getField('voltage-help').innerText = `min: ${minVoltage} V  max: ${maxVoltage} V`
+  setFieldText('voltage-help', `min: ${minVoltage} V  max: ${maxVoltage} V`)
 }
 
 function parseFramePacket0(data) {
@@ -490,15 +555,20 @@ function parseFramePacket4(data) {
   setField('total-distance', totalDistance + (speedUnitMode == 0 ? ' km' : ' mi'))
 
   modes = data.getUint16(6)
-  pedalMode      = modes >> 13 & 0x3
-  speedAlertMode = modes >> 10 & 0x3
-  rollAngleMode  = modes >>  7 & 0x3
+  pedalMode      = modes >> 13 & 0x7
+  speedAlertMode = modes >> 10 & 0x7
+  rollAngleMode  = modes >>  7 & 0x7
   speedUnitMode  = modes & 0x1
 
   checkField(`pedal-mode-${pedalMode}`)
   checkField(`speed-alert-${speedAlertMode}`)
   checkField(`roll-angle-${rollAngleMode}`)
   checkField(`speed-unit-${speedUnitMode}`)
+
+  if (pedalMode > 2 && !pid_settings_present()) {
+    showField('pid-settings')
+    sendCommand(pedalModes[pedalMode])
+  }
 
   powerOffTime = data.getUint16(8)
   powerOffMinutes = Math.floor(powerOffTime / 60)
@@ -507,8 +577,8 @@ function parseFramePacket4(data) {
 
   tiltbackSpeed = data.getUint16(10)
   if (updateTiltbackSpeed) {
-    getField('tiltback-speed-label').innerHTML = tiltbackSpeed >= 100 ? 'Disabled' : tiltbackSpeed
-    getField('tiltback-speed').value = tiltbackSpeed
+    setField('tiltback-speed', tiltbackSpeed)
+    setFieldHtml('tiltback-speed-label', tiltbackSpeed >= 100 ? 'Disabled' : tiltbackSpeed)
   }
 
   ledMode = data.getUint16(12)
@@ -534,13 +604,27 @@ function parseFramePacket4(data) {
 function parseFramePacket1(data) {
   pwmLimit = data.getUint16(2)
   if (updatePwmLimit) {
-    getField('pwm-limit').value = pwmLimit
-    getField('pwm-limit-label').innerHTML = pwmLimit
+    setField('pwm-limit', pwmLimit)
+    setFieldHtml('pwm-limit-label', pwmLimit)
   }
 
   voltage = data.getUint16(6) / 10
   setField('voltage', voltage.toFixed(1) + ' V')
   updateBatteryStatistics()
+}
+
+function parseFramePacket3(data) {
+  proportional = data.getUint16(4)
+  setField('proportional', proportional)
+  setFieldHtml('proportional-label', proportional)
+
+  integral = data.getUint16(6)
+  setField('integral', integral)
+  setFieldHtml('integral-label', integral)
+
+  derivative = data.getUint16(8)
+  setField('derivative', derivative)
+  setFieldHtml('derivative-label', derivative)
 }
 
 function readMainPackets(event) {
@@ -588,6 +672,8 @@ function handleRegularData(data) {
     characteristic.addEventListener('characteristicvaluechanged',
       data => logs += (Decoder.decode(data.target.value)) + '\n')
   }
+  else if (data.byteLength < 8)
+    return
   else if (data.byteLength == FirmwareVersionSize && (data.getInt16(0) == 0x4757 || data.getInt16(0) == 0x4346))
     setFirmware(data)
   else if (data.getUint32(0) == 0x4E414D45)
@@ -603,6 +689,8 @@ function handleFrameData(data) {
         enableFramePacket1Support()
 
       return parseFramePacket1(data)
+    case 3:
+      return parseFramePacket3(data)
     case 4:
       return parseFramePacket4(data)
   }
@@ -666,7 +754,7 @@ function readExtendedPackets(event) {
     else {
       html = ''
       keys.forEach((key, i) => html += appendElement(key, values[i]))
-      getField('extended-data').innerHTML = html
+      setFieldHtml('extended-data', html)
       rendered = true
     }
 
