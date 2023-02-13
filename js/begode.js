@@ -42,7 +42,7 @@ function modelParams() {
     case 'Monster Pro': return { 'voltMultiplier': 1.50, 'minCellVolt': 3.0 }
     case 'Master Pro':  return { 'voltMultiplier': 2,    'minCellVolt': 3.1 }
     case 'Master X':    return { 'voltMultiplier': 2,    'minCellVolt': 3.1 }
-    case 'Torque':      return { 'voltMultiplier': 2,    'minCellVolt': 3.1 }
+    case 'EX30':        return { 'voltMultiplier': 2,    'minCellVolt': 3.1 }
     case 'Master':      return { 'voltMultiplier': 2,    'minCellVolt': 3.05 }
     case 'Master C38':  return { 'voltMultiplier': 2,    'minCellVolt': 3.05 }
     default:            return { 'voltMultiplier': 1,    'minCellVolt': 3.3 }
